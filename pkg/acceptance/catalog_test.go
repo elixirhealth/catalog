@@ -30,5 +30,4 @@ func setUp(params *parameters) *state {
 
 func tearDown(st *state) {
 	// TODO
-	return nil
 }
