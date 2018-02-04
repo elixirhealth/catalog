@@ -27,10 +27,12 @@ func newCatalog(config *Config) (*Catalog, error) {
 	}, nil
 }
 
+// Put adds a publication to the catalog.
 func (x *Catalog) Put(context.Context, *catalogapi.PutRequest) (*catalogapi.PutResponse, error) {
 	panic("implement me")
 }
 
+// Search finds publications in the catalog matching the given filter criteria.
 func (x *Catalog) Search(
 	context.Context, *catalogapi.SearchRequest,
 ) (*catalogapi.SearchResponse, error) {
