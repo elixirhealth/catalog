@@ -25,8 +25,10 @@ func TestAcceptance(t *testing.T) {
 
 func setUp(params *parameters) *state {
 	// TODO
+	return nil
 }
 
 func tearDown(st *state) {
 	// TODO
+	return nil
 }
