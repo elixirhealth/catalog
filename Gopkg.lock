@@ -14,59 +14,19 @@
   version = "v3.5.1"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/btcsuite/btcd"
-  packages = ["btcec"]
-  revision = "50de9da05b50eb15658bb350f6ea24368a111ab7"
-
-[[projects]]
-  name = "github.com/cenkalti/backoff"
-  packages = ["."]
-  revision = "61153c768f31ee5f130071d08fc82b85208528de"
-  version = "v1.1.0"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/dgrijalva/jwt-go"
-  packages = ["."]
-  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
-  version = "v3.1.0"
-
-[[projects]]
   name = "github.com/drausin/libri"
   packages = [
-    "libri/common/db",
-    "libri/common/ecid",
     "libri/common/errors",
-    "libri/common/id",
-    "libri/common/logging",
-    "libri/common/storage",
-    "libri/common/subscribe",
-    "libri/librarian/api",
-    "libri/librarian/client",
-    "libri/librarian/server",
-    "libri/librarian/server/introduce",
-    "libri/librarian/server/peer",
-    "libri/librarian/server/replicate",
-    "libri/librarian/server/routing",
-    "libri/librarian/server/search",
-    "libri/librarian/server/storage",
-    "libri/librarian/server/store",
-    "libri/librarian/server/verify"
+    "libri/common/logging"
   ]
   revision = "9a7143bdadcdd0c31f73a02b082e06221981e627"
   version = "v0.3.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/dustin/go-humanize"
-  packages = ["."]
-  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
 
 [[projects]]
   branch = "develop"
@@ -76,20 +36,6 @@
     "pkg/version"
   ]
   revision = "f1252990a479f775fef9d090472a19aa9f435335"
-
-[[projects]]
-  name = "github.com/ethereum/go-ethereum"
-  packages = [
-    "common",
-    "common/hexutil",
-    "common/math",
-    "crypto",
-    "crypto/secp256k1",
-    "crypto/sha3",
-    "rlp"
-  ]
-  revision = "4bb3c89d44e372e6a9ab85a8be0c9345265c763a"
-  version = "v1.7.3"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -115,15 +61,6 @@
   packages = ["."]
   revision = "6b7015e65d366bf3f19b2b2a000a831940f0f7e0"
   version = "v1.1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/golang-lru"
-  packages = [
-    ".",
-    "simplelru"
-  ]
-  revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
 
 [[projects]]
   branch = "master"
@@ -172,12 +109,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/pkg/errors"
-  packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
-
-[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -218,12 +149,6 @@
     "xfs"
   ]
   revision = "cb4147076ac75738c9a7d279075a253c0cc5acbd"
-
-[[projects]]
-  name = "github.com/spaolacci/murmur3"
-  packages = ["."]
-  revision = "9f5d223c60793748f04a9d5b4b4eacddfc1f755d"
-  version = "v1.1"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -269,23 +194,6 @@
   packages = ["assert"]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
   version = "v1.2.1"
-
-[[projects]]
-  name = "github.com/tecbot/gorocksdb"
-  packages = ["."]
-  revision = "57a309fefefb9c03d6dcc11a0e5705fc4711b46d"
-
-[[projects]]
-  name = "github.com/willf/bitset"
-  packages = ["."]
-  revision = "d860f346b89450988a379d7d705e83c58d1ea227"
-  version = "v1.1.3"
-
-[[projects]]
-  name = "github.com/willf/bloom"
-  packages = ["."]
-  revision = "54e3b963ee1652b06c4562cb9b6020ebc6e36e59"
-  version = "v2.0.3"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -401,6 +309,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d7187d8a8886e1e4247572e1a370e227bd66dee248010e4af2274e12f158b895"
+  inputs-digest = "333143a065eed62c933f28b865f133f7f679e088006e9e12a5edc1d79faa638b"
   solver-name = "gps-cdcl"
   solver-version = 1
