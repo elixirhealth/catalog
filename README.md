@@ -1,2 +1,2 @@
 # catalog
-Internal catalog service
+Catalog service stores and retrieves libri publications.
