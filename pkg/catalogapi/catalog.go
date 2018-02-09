@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	minReceivedTime = ToEpochMicros(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC))
+	// ErrMissingValue indicates when a PutRequest is missing the value field.
+	ErrMissingValue = errors.New("missing Put request value")
 
 	// ErrMissingEnvelopeKey denotes when the envelope key is missing.
 	ErrMissingEnvelopeKey = errors.New("missing envelope key")
@@ -48,7 +49,20 @@ var (
 	// microseconds from the epoch).
 	ErrEarlierReceivedTime = fmt.Errorf("received time earlier than min %d",
 		minReceivedTime)
+
+	minReceivedTime = ToEpochMicros(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC))
 )
+
+// ValidatePutRequest checks that a PutRequest has the required value.
+func ValidatePutRequest(rq *PutRequest) error {
+	if rq.Value == nil {
+		return ErrMissingValue
+	}
+	return ValidatePublicationReceipt(rq.Value)
+}
+
+// ValidateSearchRequest is currently omitted b/c it is 100% redundant with checks that already
+// exist in storage layer.
 
 // ValidatePublicationReceipt validates that a *PublicationReceipt has the required fields
 // populated with valid values.

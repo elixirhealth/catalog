@@ -4,6 +4,7 @@ import (
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
 	"github.com/elxirhealth/catalog/pkg/server/storage"
 	"github.com/elxirhealth/service-base/pkg/server"
+	"go.uber.org/zap"
 	"golang.org/x/net/context"
 )
 
@@ -18,31 +19,33 @@ type Catalog struct {
 // newCatalog creates a new CatalogServer from the given config.
 func newCatalog(config *Config) (*Catalog, error) {
 	baseServer := server.NewBaseServer(config.BaseConfig)
-
-	// TODO add other init
-
+	storer, err := getStorer(config, baseServer.Logger)
+	if err != nil {
+		return nil, err
+	}
 	return &Catalog{
 		BaseServer: baseServer,
 		config:     config,
-		// TODO add other things
+		storer:     storer,
 	}, nil
 }
 
 // Put adds a publication to the catalog.
 func (x *Catalog) Put(ctx context.Context, rq *api.PutRequest) (*api.PutResponse, error) {
-	// TODO (drausin) debug log request
-	// TODO (drausin) validate rq
-	if err := x.storer.Put(rq.Pub); err != nil {
+	x.Logger.Debug("received Put request", logPutRequestFields(rq)...)
+	if err := api.ValidatePutRequest(rq); err != nil {
 		return nil, err
 	}
-	// TODO (drausin) info log success
+	if err := x.storer.Put(rq.Value); err != nil {
+		return nil, err
+	}
+	x.Logger.Info("put publication receipt", logPutRequestFields(rq)...)
 	return &api.PutResponse{}, nil
 }
 
 // Search finds publications in the catalog matching the given filter criteria.
 func (x *Catalog) Search(ctx context.Context, rq *api.SearchRequest) (*api.SearchResponse, error) {
-	// TODO (drausin) debug log request
-	// TODO (drausin) validate rq
+	x.Logger.Debug("received search request", logSearchRequestFields(rq)...)
 	filters := &storage.SearchFilters{
 		EntryKey:        rq.EntryKey,
 		AuthorPublicKey: rq.AuthorPublicKey,
@@ -53,6 +56,6 @@ func (x *Catalog) Search(ctx context.Context, rq *api.SearchRequest) (*api.Searc
 	if err != nil {
 		return nil, err
 	}
-	// TODO (drausin) info log success
+	x.Logger.Info("found search results", zap.Int(logNResults, len(result)))
 	return &api.SearchResponse{Result: result}, nil
 }

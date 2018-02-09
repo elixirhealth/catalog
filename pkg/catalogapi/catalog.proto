@@ -10,7 +10,7 @@ service Catalog {
 }
 
 message PutRequest {
-    PublicationReceipt pub = 1;
+    PublicationReceipt value = 1;
 }
 
 message PutResponse {

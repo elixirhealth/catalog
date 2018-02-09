@@ -1,15 +1,27 @@
 package storage
 
 import (
-	"time"
-
 	"errors"
-
 	"fmt"
+	"time"
 
 	"github.com/drausin/libri/libri/common/id"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	"go.uber.org/zap/zapcore"
+)
+
+const (
+	// Unspecified indicates when the storage type is not specified (and thus should take the
+	// default value).
+	Unspecified Type = iota
+
+	// InMemory indicates an ephemeral, in-memory (and thus not highly available) storage. This
+	// storage layer should generally only be used during testing and not in production.
+	InMemory
+
+	// DataStore indicates a (highly available) storage backed by GCP DataStore.
+	DataStore
 )
 
 var (
@@ -31,7 +43,11 @@ var (
 	ErrEarlierBeforeMin = fmt.Errorf("before time filter earlier than %s",
 		minBeforeTime.String())
 
-	defaultSearchQueryTimeout = 5 * time.Second
+	// DefaultStorage is the default storage type.
+	DefaultStorage = InMemory
+
+	// DefaultSearchQueryTimeout is the default timeout for search queries.
+	DefaultSearchQueryTimeout = 5 * time.Second
 
 	minBeforeTime = time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
 )
@@ -42,16 +58,39 @@ type Storer interface {
 	Search(filters *SearchFilters, limit uint) ([]*api.PublicationReceipt, error)
 }
 
+// Type indicates the storage backend type.
+type Type int
+
+func (t Type) String() string {
+	switch t {
+	case InMemory:
+		return "InMemory"
+	case DataStore:
+		return "DataStore"
+	default:
+		return "Unspecified"
+	}
+}
+
 // Parameters defines the parameters of the Storer.
 type Parameters struct {
+	StorageType        Type
 	SearchQueryTimeout time.Duration
 }
 
 // NewDefaultParameters returns a *Parameters object with default values.
 func NewDefaultParameters() *Parameters {
 	return &Parameters{
-		SearchQueryTimeout: defaultSearchQueryTimeout,
+		StorageType:        DefaultStorage,
+		SearchQueryTimeout: DefaultSearchQueryTimeout,
 	}
+}
+
+// MarshalLogObject writes the parameters to the given object encoder.
+func (p *Parameters) MarshalLogObject(oe zapcore.ObjectEncoder) error {
+	oe.AddString(logStorageType, p.StorageType.String())
+	oe.AddDuration(logSearchQueryTimeout, p.SearchQueryTimeout)
+	return nil
 }
 
 // SearchFilters represents a set of filters for a search. If fields are non-null, an equality
