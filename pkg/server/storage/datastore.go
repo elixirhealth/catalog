@@ -74,11 +74,16 @@ func (d *datastoreStorer) Put(pr *api.PublicationReceipt) error {
 		return err
 	} else if err == nil {
 		// nothing to do if already exists
+		d.logger.Debug("publication receipt already exists",
+			zap.String(logEnvelopeKey, id.Hex(pr.EnvelopeKey)))
 		return nil
 	}
 	spr := encodeStoredPubReceipt(pr)
-	_, err = d.client.Put(pubKey, spr)
-	return err
+	if _, err = d.client.Put(pubKey, spr); err != nil {
+		return err
+	}
+	d.logger.Debug("stored new publication", zap.String(logEnvelopeKey, id.Hex(pr.EnvelopeKey)))
+	return nil
 }
 
 // Search searches for publications matching the given filters.

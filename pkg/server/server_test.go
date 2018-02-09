@@ -1,22 +1,37 @@
 package server
 
 import (
+	"context"
+	"errors"
+	"math/rand"
 	"testing"
+	"time"
 
+	"github.com/drausin/libri/libri/common/id"
+	libriapi "github.com/drausin/libri/libri/librarian/api"
+	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	"github.com/elxirhealth/catalog/pkg/server/storage"
+	"github.com/elxirhealth/service-base/pkg/server"
+	"github.com/elxirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO (drausin) add when have in-mem storage
+/*
 func TestNewCatalog_ok(t *testing.T) {
 	config := NewDefaultConfig()
 	c, err := newCatalog(config)
 	assert.Nil(t, err)
-	// TODO assert NotNil on other elements of server struct
 	assert.Equal(t, config, c.config)
+	assert.NotEmpty(t, c.storer)
 }
+*/
 
 func TestNewCatalog_err(t *testing.T) {
 	badConfigs := map[string]*Config{
-	// TODO add bad config instances
+		"empty ProjectID": NewDefaultConfig().WithStorage(
+			&storage.Parameters{StorageType: storage.DataStore},
+		),
 	}
 	for desc, badConfig := range badConfigs {
 		c, err := newCatalog(badConfig)
@@ -25,4 +40,121 @@ func TestNewCatalog_err(t *testing.T) {
 	}
 }
 
-// TODO add TestCatalog_ENDPOINT_(ok|err) for each ENDPOINT
+func TestCatalog_Put_ok(t *testing.T) {
+	rng := rand.New(rand.NewSource(0))
+	x := &Catalog{
+		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
+		storer:     &fixedStorer{},
+	}
+	rq := &api.PutRequest{
+		Value: &api.PublicationReceipt{
+			EnvelopeKey:     util.RandBytes(rng, id.Length),
+			EntryKey:        util.RandBytes(rng, id.Length),
+			AuthorPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+			ReaderPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+			ReceivedTime:    api.ToEpochMicros(time.Now()),
+		},
+	}
+
+	rp, err := x.Put(context.Background(), rq)
+	assert.Nil(t, err)
+	assert.NotNil(t, rp)
+}
+
+func TestCatalog_Put_err(t *testing.T) {
+	rng := rand.New(rand.NewSource(0))
+
+	// bad request
+	x := &Catalog{
+		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
+		storer:     &fixedStorer{},
+	}
+	rq := &api.PutRequest{
+		Value: &api.PublicationReceipt{
+			// missing EnvelopeKey
+			EntryKey:        util.RandBytes(rng, id.Length),
+			AuthorPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+			ReaderPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+			ReceivedTime:    api.ToEpochMicros(time.Now()),
+		},
+	}
+
+	rp, err := x.Put(context.Background(), rq)
+	assert.NotNil(t, err)
+	assert.Nil(t, rp)
+
+	// put error
+	x = &Catalog{
+		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
+		storer:     &fixedStorer{putErr: errors.New("some Put error")},
+	}
+	rq = &api.PutRequest{
+		Value: testPubReceipt(rng),
+	}
+
+	rp, err = x.Put(context.Background(), rq)
+	assert.NotNil(t, err)
+	assert.Nil(t, rp)
+}
+
+func TestCatalog_Search_ok(t *testing.T) {
+	rng := rand.New(rand.NewSource(0))
+	x := &Catalog{
+		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
+		storer: &fixedStorer{
+			searchResult: []*api.PublicationReceipt{
+				testPubReceipt(rng),
+			},
+		},
+	}
+	rq := &api.SearchRequest{
+		EntryKey: util.RandBytes(rng, id.Length),
+	}
+
+	rp, err := x.Search(context.Background(), rq)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(rp.Result))
+}
+
+func TestCatalog_Search_err(t *testing.T) {
+	rng := rand.New(rand.NewSource(0))
+	x := &Catalog{
+		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
+		storer: &fixedStorer{
+			searchErr: errors.New("some Search error"),
+		},
+	}
+	rq := &api.SearchRequest{
+		EntryKey: util.RandBytes(rng, id.Length),
+	}
+
+	rp, err := x.Search(context.Background(), rq)
+	assert.NotNil(t, err)
+	assert.Nil(t, rp)
+}
+
+func testPubReceipt(rng *rand.Rand) *api.PublicationReceipt {
+	return &api.PublicationReceipt{
+		EnvelopeKey:     util.RandBytes(rng, id.Length),
+		EntryKey:        util.RandBytes(rng, id.Length),
+		AuthorPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+		ReaderPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+		ReceivedTime:    api.ToEpochMicros(time.Now()),
+	}
+}
+
+type fixedStorer struct {
+	putErr       error
+	searchResult []*api.PublicationReceipt
+	searchErr    error
+}
+
+func (f *fixedStorer) Put(pub *api.PublicationReceipt) error {
+	return f.putErr
+}
+
+func (f *fixedStorer) Search(
+	filters *storage.SearchFilters, limit uint,
+) ([]*api.PublicationReceipt, error) {
+	return f.searchResult, f.searchErr
+}
