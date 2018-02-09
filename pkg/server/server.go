@@ -1,7 +1,8 @@
 package server
 
 import (
-	"github.com/elxirhealth/catalog/pkg/catalogapi"
+	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	"github.com/elxirhealth/catalog/pkg/server/storage"
 	"github.com/elxirhealth/service-base/pkg/server"
 	"golang.org/x/net/context"
 )
@@ -11,7 +12,7 @@ type Catalog struct {
 	*server.BaseServer
 	config *Config
 
-	// TODO add other things here
+	storer storage.Storer
 }
 
 // newCatalog creates a new CatalogServer from the given config.
@@ -28,13 +29,30 @@ func newCatalog(config *Config) (*Catalog, error) {
 }
 
 // Put adds a publication to the catalog.
-func (x *Catalog) Put(context.Context, *catalogapi.PutRequest) (*catalogapi.PutResponse, error) {
-	panic("implement me")
+func (x *Catalog) Put(ctx context.Context, rq *api.PutRequest) (*api.PutResponse, error) {
+	// TODO (drausin) debug log request
+	// TODO (drausin) validate rq
+	if err := x.storer.Put(rq.Pub); err != nil {
+		return nil, err
+	}
+	// TODO (drausin) info log success
+	return &api.PutResponse{}, nil
 }
 
 // Search finds publications in the catalog matching the given filter criteria.
-func (x *Catalog) Search(
-	context.Context, *catalogapi.SearchRequest,
-) (*catalogapi.SearchResponse, error) {
-	panic("implement me")
+func (x *Catalog) Search(ctx context.Context, rq *api.SearchRequest) (*api.SearchResponse, error) {
+	// TODO (drausin) debug log request
+	// TODO (drausin) validate rq
+	filters := &storage.SearchFilters{
+		EntryKey:        rq.EntryKey,
+		AuthorPublicKey: rq.AuthorPublicKey,
+		ReaderPublicKey: rq.ReaderPublicKey,
+		Before:          rq.Before,
+	}
+	result, err := x.storer.Search(filters, uint(rq.Limit))
+	if err != nil {
+		return nil, err
+	}
+	// TODO (drausin) info log success
+	return &api.SearchResponse{Result: result}, nil
 }
