@@ -13,6 +13,7 @@ SERVICE_BASE_PKG=github.com/elxirhealth/service-base
 acceptance:
 	@echo "--> Running acceptance tests"
 	@mkdir -p artifacts
+	@go test -tags acceptance -v github.com/elxirhealth/catalog/pkg/server/storage
 	@go test -tags acceptance -v github.com/elxirhealth/catalog/pkg/acceptance 2>&1 | tee artifacts/acceptance.log
 
 build:

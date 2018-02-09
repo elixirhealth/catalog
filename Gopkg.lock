@@ -2,6 +2,19 @@
 
 
 [[projects]]
+  name = "cloud.google.com/go"
+  packages = [
+    "compute/metadata",
+    "datastore",
+    "internal",
+    "internal/atomiccache",
+    "internal/fields",
+    "internal/version"
+  ]
+  revision = "767c40d6a2e058483c25fa193e963a22da17236d"
+  version = "v0.18.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -14,6 +27,12 @@
   version = "v3.5.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/btcsuite/btcd"
+  packages = ["btcec"]
+  revision = "50de9da05b50eb15658bb350f6ea24368a111ab7"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -22,20 +41,45 @@
 [[projects]]
   name = "github.com/drausin/libri"
   packages = [
+    "libri/common/ecid",
     "libri/common/errors",
-    "libri/common/logging"
+    "libri/common/id",
+    "libri/common/logging",
+    "libri/librarian/api"
   ]
   revision = "9a7143bdadcdd0c31f73a02b082e06221981e627"
   version = "v0.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+  packages = ["."]
+  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
 
 [[projects]]
   branch = "develop"
   name = "github.com/elxirhealth/service-base"
   packages = [
     "pkg/server",
+    "pkg/server/storage",
+    "pkg/util",
     "pkg/version"
   ]
-  revision = "f1252990a479f775fef9d090472a19aa9f435335"
+  revision = "06102be8f678cd84514d436ec4eb119f231f5c67"
+
+[[projects]]
+  name = "github.com/ethereum/go-ethereum"
+  packages = [
+    "common",
+    "common/hexutil",
+    "common/math",
+    "crypto",
+    "crypto/secp256k1",
+    "crypto/sha3",
+    "rlp"
+  ]
+  revision = "4bb3c89d44e372e6a9ab85a8be0c9345265c763a"
+  version = "v1.7.3"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -51,10 +95,18 @@
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
-    "ptypes/timestamp"
+    "ptypes/struct",
+    "ptypes/timestamp",
+    "ptypes/wrappers"
   ]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/googleapis/gax-go"
+  packages = ["."]
+  revision = "317e0006254c44a0ac427cc52a0e083ff0b9622f"
+  version = "v2.0.0"
 
 [[projects]]
   name = "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -86,7 +138,10 @@
 
 [[projects]]
   name = "github.com/magiconair/properties"
-  packages = ["."]
+  packages = [
+    ".",
+    "assert"
+  ]
   revision = "d419a98cdbed11a922bf76f257b7c4be79b50e73"
   version = "v1.7.4"
 
@@ -225,6 +280,7 @@
   name = "golang.org/x/net"
   packages = [
     "context",
+    "context/ctxhttp",
     "http2",
     "http2/hpack",
     "idna",
@@ -232,7 +288,19 @@
     "lex/httplex",
     "trace"
   ]
-  revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
+  revision = "f5dfe339be1d06f81b22525fe34671ee7d2c8904"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "google",
+    "internal",
+    "jws",
+    "jwt"
+  ]
+  revision = "543e37812f10c46c622c9575afd7ad22f22a12ba"
 
 [[projects]]
   branch = "master"
@@ -259,13 +327,50 @@
     "unicode/norm",
     "unicode/rangetable"
   ]
-  revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
+  revision = "4e4a3210bb54bb31f6ab2cdca2edcc0b50c420c1"
+
+[[projects]]
+  branch = "master"
+  name = "google.golang.org/api"
+  packages = [
+    "googleapi",
+    "googleapi/internal/uritemplates",
+    "internal",
+    "iterator",
+    "option",
+    "transport/grpc"
+  ]
+  revision = "e771abbff930c1ae3c6e2c35117fc88856f11b2f"
+
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = [
+    ".",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api",
+    "internal/socket",
+    "internal/urlfetch",
+    "socket",
+    "urlfetch"
+  ]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
-  revision = "4eb30f4778eed4c258ba66527a0d4f9ec8a36c45"
+  packages = [
+    "googleapis/api/annotations",
+    "googleapis/datastore/v1",
+    "googleapis/rpc/status",
+    "googleapis/type/latlng"
+  ]
+  revision = "2b5a72b8730b0b16380010cfe5286c42108d88e7"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -277,6 +382,7 @@
     "codes",
     "connectivity",
     "credentials",
+    "credentials/oauth",
     "encoding",
     "grpclb/grpc_lb_v1/messages",
     "grpclog",
@@ -309,6 +415,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "333143a065eed62c933f28b865f133f7f679e088006e9e12a5edc1d79faa638b"
+  inputs-digest = "2b779bb324fb707a7b02517c79c80ea5bdaaa414e25d4c14b03bc4c039cb16d2"
   solver-name = "gps-cdcl"
   solver-version = 1
