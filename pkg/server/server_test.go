@@ -109,6 +109,7 @@ func TestCatalog_Search_ok(t *testing.T) {
 	}
 	rq := &api.SearchRequest{
 		EntryKey: util.RandBytes(rng, id.Length),
+		Limit:    storage.MaxSearchLimit,
 	}
 
 	rp, err := x.Search(context.Background(), rq)
@@ -120,15 +121,28 @@ func TestCatalog_Search_err(t *testing.T) {
 	rng := rand.New(rand.NewSource(0))
 	x := &Catalog{
 		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
-		storer: &fixedStorer{
-			searchErr: errors.New("some Search error"),
-		},
+		storer:     &fixedStorer{},
 	}
 	rq := &api.SearchRequest{
 		EntryKey: util.RandBytes(rng, id.Length),
 	}
 
 	rp, err := x.Search(context.Background(), rq)
+	assert.NotNil(t, err)
+	assert.Nil(t, rp)
+
+	x = &Catalog{
+		BaseServer: server.NewBaseServer(server.NewDefaultBaseConfig()),
+		storer: &fixedStorer{
+			searchErr: errors.New("some Search error"),
+		},
+	}
+	rq = &api.SearchRequest{
+		EntryKey: util.RandBytes(rng, id.Length),
+		Limit:    storage.MaxSearchLimit,
+	}
+
+	rp, err = x.Search(context.Background(), rq)
 	assert.NotNil(t, err)
 	assert.Nil(t, rp)
 }
@@ -154,7 +168,7 @@ func (f *fixedStorer) Put(pub *api.PublicationReceipt) error {
 }
 
 func (f *fixedStorer) Search(
-	filters *storage.SearchFilters, limit uint,
+	filters *storage.SearchFilters, limit uint32,
 ) ([]*api.PublicationReceipt, error) {
 	return f.searchResult, f.searchErr
 }

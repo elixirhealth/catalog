@@ -27,10 +27,14 @@ func logPutRequestFields(rq *catalogapi.PutRequest) []zapcore.Field {
 }
 
 func logSearchRequestFields(rq *catalogapi.SearchRequest) []zapcore.Field {
-	return []zapcore.Field{
+	fs := []zapcore.Field{
 		zap.String(logEntryKeyFilterShort, id.ShortHex(rq.EntryKey)),
 		zap.String(logAuthorPubKeyFilterShort, id.ShortHex(rq.AuthorPublicKey)),
 		zap.String(logReaderPubKeyFilterShort, id.ShortHex(rq.ReaderPublicKey)),
-		zap.Time(logBeforeTimeFilter, catalogapi.FromEpochMicros(rq.Before)),
 	}
+	if rq.Before != 0 {
+		fs = append(fs,
+			zap.Time(logBeforeTimeFilter, catalogapi.FromEpochMicros(rq.Before)))
+	}
+	return fs
 }

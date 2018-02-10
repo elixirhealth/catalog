@@ -55,7 +55,7 @@ var (
 // Storer stores and searches for *PublicationReceipts.
 type Storer interface {
 	Put(pub *api.PublicationReceipt) error
-	Search(filters *SearchFilters, limit uint) ([]*api.PublicationReceipt, error)
+	Search(filters *SearchFilters, limit uint32) ([]*api.PublicationReceipt, error)
 }
 
 // Type indicates the storage backend type.

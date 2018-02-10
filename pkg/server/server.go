@@ -46,13 +46,16 @@ func (x *Catalog) Put(ctx context.Context, rq *api.PutRequest) (*api.PutResponse
 // Search finds publications in the catalog matching the given filter criteria.
 func (x *Catalog) Search(ctx context.Context, rq *api.SearchRequest) (*api.SearchResponse, error) {
 	x.Logger.Debug("received search request", logSearchRequestFields(rq)...)
+	if err := api.ValidateSearchRequest(rq); err != nil {
+		return nil, err
+	}
 	filters := &storage.SearchFilters{
 		EntryKey:        rq.EntryKey,
 		AuthorPublicKey: rq.AuthorPublicKey,
 		ReaderPublicKey: rq.ReaderPublicKey,
 		Before:          rq.Before,
 	}
-	result, err := x.storer.Search(filters, uint(rq.Limit))
+	result, err := x.storer.Search(filters, rq.Limit)
 	if err != nil {
 		return nil, err
 	}
