@@ -18,7 +18,7 @@ import (
 const (
 	// MaxSearchLimit is the maximum number of search results that can be returned in a single
 	// search query.
-	MaxSearchLimit = uint(128)
+	MaxSearchLimit = uint32(128)
 
 	publicationReceiptKind = "publicationReceipt"
 	secsPerDay             = 60 * 60 * 24
@@ -87,7 +87,9 @@ func (d *datastoreStorer) Put(pr *api.PublicationReceipt) error {
 }
 
 // Search searches for publications matching the given filters.
-func (d *datastoreStorer) Search(fs *SearchFilters, limit uint) ([]*api.PublicationReceipt, error) {
+func (d *datastoreStorer) Search(
+	fs *SearchFilters, limit uint32,
+) ([]*api.PublicationReceipt, error) {
 	if err := validateSearchFilters(fs); err != nil {
 		return nil, err
 	}
@@ -96,7 +98,8 @@ func (d *datastoreStorer) Search(fs *SearchFilters, limit uint) ([]*api.Publicat
 	}
 	storedResults := &publicationReceipts{}
 	ctx, cancel := context.WithTimeout(context.Background(), d.params.SearchQueryTimeout)
-	iter := d.client.Run(ctx, getSearchQuery(fs))
+	q := getSearchQuery(fs)
+	iter := d.client.Run(ctx, q)
 	d.iter.Init(iter)
 	for {
 		stored := &PublicationReceipt{}
@@ -107,6 +110,8 @@ func (d *datastoreStorer) Search(fs *SearchFilters, limit uint) ([]*api.Publicat
 			cancel()
 			return nil, err
 		}
+		d.logger.Debug("processing search result",
+			zap.String(logEnvelopeKey, stored.EnvelopeKey.Name))
 		if done := processStored(stored, fs.Before, storedResults, limit); done {
 			break
 		}
@@ -129,7 +134,7 @@ func processStored(
 	stored *PublicationReceipt,
 	beforeFilter int64,
 	storedResults *publicationReceipts,
-	limit uint,
+	limit uint32,
 ) bool {
 	before := stored.ReceivedTime.Before(api.FromEpochMicros(beforeFilter))
 	if beforeFilter != 0 && !before {

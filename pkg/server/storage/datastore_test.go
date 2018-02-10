@@ -5,11 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
-	"os/exec"
-	"syscall"
 	"testing"
 	"time"
 
@@ -19,16 +16,11 @@ import (
 	"github.com/drausin/libri/libri/common/logging"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	"github.com/elxirhealth/service-base/pkg/server/storage"
 	"github.com/elxirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
-)
-
-const (
-	datastoreEmulatorHostEnv = "DATASTORE_EMULATOR_HOST"
-	datastoreEmulatorAddr    = "localhost:2002"
-	dummyDatastoreProject    = "dummy-datastore-test"
 )
 
 // TestDatastoreStorer_PutSearch is an integration test that spins up a DataStore emulator to
@@ -37,11 +29,11 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	dataDir, err := ioutil.TempDir("", "catalog-datastore-test")
 	assert.Nil(t, err)
 	defer cerrors.MaybePanic(os.RemoveAll(dataDir))
-	datastoreProc := startDatastoreEmulator(dataDir, datastoreEmulatorAddr)
-	defer stopDatastoreEmulator(datastoreProc)
+	datastoreProc := storage.StartDatastoreEmulator(dataDir)
+	defer storage.StopDatastoreEmulator(datastoreProc)
 
 	lg := logging.NewDevInfoLogger()
-	d, err := NewDatastore(dummyDatastoreProject, NewDefaultParameters(), lg)
+	d, err := NewDatastore("dummy-project-id", NewDefaultParameters(), lg)
 	assert.Nil(t, err)
 
 	now := time.Now().Unix() * 1E6
@@ -315,31 +307,6 @@ func TestDecodeStoredPubReceipt_err(t *testing.T) {
 		assert.Nil(t, decoded, info)
 		assert.NotNil(t, err, info)
 	}
-}
-
-func startDatastoreEmulator(dataDir string, addr string) *os.Process {
-	cmd := exec.Command("gcloud", "beta", "emulators", "datastore", "start",
-		"--no-store-on-disk",
-		"--host-port", addr,
-		"--project", dummyDatastoreProject,
-		"--data-dir", dataDir,
-	)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Start()
-	cerrors.MaybePanic(err)
-	os.Setenv(datastoreEmulatorHostEnv, addr)
-	return cmd.Process
-}
-
-func stopDatastoreEmulator(process *os.Process) {
-	pgid, err := syscall.Getpgid(process.Pid)
-	cerrors.MaybePanic(err)
-	err = syscall.Kill(-pgid, syscall.SIGKILL)
-	cerrors.MaybePanic(err)
-	log.Printf("stopped child processes under pid %d\n", pgid)
 }
 
 type fixedDatastoreClient struct {

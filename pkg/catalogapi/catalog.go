@@ -50,6 +50,9 @@ var (
 	ErrEarlierReceivedTime = fmt.Errorf("received time earlier than min %d",
 		minReceivedTime)
 
+	// ErrSearchZeroLimit denotes when a search request has a zero limit.
+	ErrSearchZeroLimit = errors.New("search zero limit not allowed")
+
 	minReceivedTime = ToEpochMicros(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC))
 )
 
@@ -61,8 +64,13 @@ func ValidatePutRequest(rq *PutRequest) error {
 	return ValidatePublicationReceipt(rq.Value)
 }
 
-// ValidateSearchRequest is currently omitted b/c it is 100% redundant with checks that already
-// exist in storage layer.
+// ValidateSearchRequest checks that a SearchRequest has the required values.
+func ValidateSearchRequest(rq *SearchRequest) error {
+	if rq.Limit == 0 {
+		return ErrSearchZeroLimit
+	}
+	return nil
+}
 
 // ValidatePublicationReceipt validates that a *PublicationReceipt has the required fields
 // populated with valid values.
@@ -120,5 +128,5 @@ func FromEpochMicros(epochMicros int64) time.Time {
 
 // ToEpochMicros converts a time.Tiem to epoch time microseconds.
 func ToEpochMicros(t time.Time) int64 {
-	return t.UnixNano() / 1E3
+	return t.UnixNano() / 1000
 }
