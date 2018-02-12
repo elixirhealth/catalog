@@ -16,8 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO (drausin) add when have in-mem storage
-/*
 func TestNewCatalog_ok(t *testing.T) {
 	config := NewDefaultConfig()
 	c, err := newCatalog(config)
@@ -25,7 +23,6 @@ func TestNewCatalog_ok(t *testing.T) {
 	assert.Equal(t, config, c.config)
 	assert.NotEmpty(t, c.storer)
 }
-*/
 
 func TestNewCatalog_err(t *testing.T) {
 	badConfigs := map[string]*Config{
