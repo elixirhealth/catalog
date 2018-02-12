@@ -1,7 +1,12 @@
 package server
 
-// TODO (drausin) add back in when have in-mem storage
-/*
+import (
+	"sync"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
 func TestStart(t *testing.T) {
 	up := make(chan *Catalog, 1)
 	wg1 := new(sync.WaitGroup)
@@ -18,4 +23,3 @@ func TestStart(t *testing.T) {
 	x.StopServer()
 	wg1.Wait()
 }
-*/

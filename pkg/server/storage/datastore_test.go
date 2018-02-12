@@ -36,6 +36,10 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	d, err := NewDatastore("dummy-project-id", NewDefaultParameters(), lg)
 	assert.Nil(t, err)
 
+	testStorerPutSearch(t, d)
+}
+
+func testStorerPutSearch(t *testing.T, s Storer) {
 	now := time.Now().Unix() * 1E6
 	envKey1 := append(make([]byte, id.Length-1), 1)
 	envKey2 := append(make([]byte, id.Length-1), 2)
@@ -80,22 +84,16 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 		},
 	}
 	for _, pr := range prs {
-		err = d.Put(pr)
+		err := s.Put(pr)
 		assert.Nil(t, err)
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	count, err := d.(*datastoreStorer).client.Count(ctx, datastore.NewQuery(publicationReceiptKind))
-	cancel()
-	assert.Nil(t, err)
-	assert.Equal(t, len(prs), count)
 
 	// check entry key filter
 	limit := MaxSearchLimit
 	f := &SearchFilters{
 		EntryKey: entryKey1,
 	}
-	results, err := d.Search(f, limit)
+	results, err := s.Search(f, limit)
 	assert.Nil(t, err)
 	assert.Len(t, results, 3)
 	assert.Equal(t, envKey3, results[0].EnvelopeKey)
@@ -106,7 +104,7 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	f = &SearchFilters{
 		AuthorPublicKey: authorPub1,
 	}
-	results, err = d.Search(f, limit)
+	results, err = s.Search(f, limit)
 	assert.Nil(t, err)
 	assert.Len(t, results, 3)
 	assert.Equal(t, envKey3, results[0].EnvelopeKey)
@@ -117,7 +115,7 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	f = &SearchFilters{
 		ReaderPublicKey: readerPub1,
 	}
-	results, err = d.Search(f, limit)
+	results, err = s.Search(f, limit)
 	assert.Nil(t, err)
 	assert.Len(t, results, 2)
 	assert.Equal(t, envKey4, results[0].EnvelopeKey)
@@ -128,7 +126,7 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 		EntryKey:        entryKey1,
 		ReaderPublicKey: readerPub1,
 	}
-	results, err = d.Search(f, limit)
+	results, err = s.Search(f, limit)
 	assert.Nil(t, err)
 	assert.Len(t, results, 1)
 	assert.Equal(t, envKey1, results[0].EnvelopeKey)
@@ -138,7 +136,7 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 		EntryKey: entryKey1,
 		Before:   now - 3,
 	}
-	results, err = d.Search(f, limit)
+	results, err = s.Search(f, limit)
 	assert.Nil(t, err)
 	assert.Len(t, results, 2)
 	assert.Equal(t, envKey2, results[0].EnvelopeKey)
@@ -148,7 +146,7 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	f = &SearchFilters{
 		EntryKey: entryKey1,
 	}
-	results, err = d.Search(f, 1)
+	results, err = s.Search(f, 1)
 	assert.Nil(t, err)
 	assert.Len(t, results, 1)
 	assert.Equal(t, envKey3, results[0].EnvelopeKey)

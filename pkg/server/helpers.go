@@ -18,7 +18,7 @@ func getStorer(config *Config, logger *zap.Logger) (storage.Storer, error) {
 	case storage.DataStore:
 		return storage.NewDatastore(config.GCPProjectID, config.Storage, logger)
 	case storage.InMemory:
-		panic("not implemented yet")
+		return storage.NewMemory(config.Storage, logger), nil
 	default:
 		return nil, ErrInvalidStorageType
 	}
