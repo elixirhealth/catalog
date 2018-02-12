@@ -18,7 +18,7 @@ import (
 func TestMemoryStorer_PutSearch(t *testing.T) {
 	lg := logging.NewDevInfoLogger()
 	s := NewMemory(NewDefaultParameters(), lg)
-	testStorer_PutSearch(t, s)
+	testStorerPutSearch(t, s)
 }
 
 func TestMemoryStorer_Put_ok(t *testing.T) {

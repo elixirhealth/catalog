@@ -121,7 +121,7 @@ func (d *datastoreStorer) Search(
 	return storedResultsToList(storedResults)
 }
 
-func storedResultsToList(storedResults *publicationReceipts) ([]*api.PublicationReceipt, error) {
+func storedResultsToList(storedResults heap.Interface) ([]*api.PublicationReceipt, error) {
 	result := make([]*api.PublicationReceipt, storedResults.Len())
 	for i := storedResults.Len() - 1; i >= 0; i-- {
 		storedResult := heap.Pop(storedResults).(*PublicationReceipt)

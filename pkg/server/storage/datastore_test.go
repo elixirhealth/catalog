@@ -36,10 +36,10 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	d, err := NewDatastore("dummy-project-id", NewDefaultParameters(), lg)
 	assert.Nil(t, err)
 
-	testStorer_PutSearch(t, d)
+	testStorerPutSearch(t, d)
 }
 
-func testStorer_PutSearch(t *testing.T, s Storer) {
+func testStorerPutSearch(t *testing.T, s Storer) {
 	now := time.Now().Unix() * 1E6
 	envKey1 := append(make([]byte, id.Length-1), 1)
 	envKey2 := append(make([]byte, id.Length-1), 2)

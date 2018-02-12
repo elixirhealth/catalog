@@ -11,8 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// NewDatastore creates a new Storer backed by a DataStore instance in the given GCP project with
-// the given parameters and logger.
+// NewMemory creates a new Storer backed by an in-memory map with the given parameters and logger.
 func NewMemory(params *Parameters, logger *zap.Logger) Storer {
 	return &memoryStorer{
 		storedPRs: make(map[string]*PublicationReceipt),
