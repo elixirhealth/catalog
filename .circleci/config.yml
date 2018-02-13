@@ -28,3 +28,17 @@ jobs:
       - run: make lint
       - run: make acceptance
       - run: make demo
+      - run:
+          name: publish docker image
+          command: |
+            if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
+              docker login -u _json_key -p "${GCR_SVC_JSON}" gcr.io
+              CATALOG_VERSION=$(./deploy/bin/catalog version)
+              docker tag gcr.io/elxir-core-infra/catalog:snapshot gcr.io/elxir-core-infra/catalog:${CATALOG_VERSION}
+              docker tag gcr.io/elxir-core-infra/catalog:snapshot gcr.io/elxir-core-infra/catalog:latest
+              docker push gcr.io/elxir-core-infra/catalog:${CATALOG_VERSION}
+              docker push gcr.io/elxir-core-infra/catalog:latest
+            elif [[ "${CIRCLE_BRANCH}" == "develop" ]]; then
+              docker login -u _json_key -p "${GCR_SVC_JSON}" gcr.io
+              docker push gcr.io/elxir-core-infra/catalog:snapshot
+            fi
