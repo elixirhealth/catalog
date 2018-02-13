@@ -74,21 +74,21 @@ func (t Type) String() string {
 
 // Parameters defines the parameters of the Storer.
 type Parameters struct {
-	StorageType        Type
+	Type               Type
 	SearchQueryTimeout time.Duration
 }
 
 // NewDefaultParameters returns a *Parameters object with default values.
 func NewDefaultParameters() *Parameters {
 	return &Parameters{
-		StorageType:        DefaultStorage,
+		Type:               DefaultStorage,
 		SearchQueryTimeout: DefaultSearchQueryTimeout,
 	}
 }
 
 // MarshalLogObject writes the parameters to the given object encoder.
 func (p *Parameters) MarshalLogObject(oe zapcore.ObjectEncoder) error {
-	oe.AddString(logStorageType, p.StorageType.String())
+	oe.AddString(logStorageType, p.Type.String())
 	oe.AddDuration(logSearchQueryTimeout, p.SearchQueryTimeout)
 	return nil
 }

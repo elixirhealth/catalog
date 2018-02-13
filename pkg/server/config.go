@@ -29,6 +29,7 @@ func (c *Config) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	errors.MaybePanic(err) // should never happen
 	err = oe.AddObject(logStorage, c.Storage)
 	errors.MaybePanic(err) // should never happen
+	oe.AddString(logGCPProjectID, c.GCPProjectID)
 	return nil
 }
 

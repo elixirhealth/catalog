@@ -14,7 +14,7 @@ var (
 )
 
 func getStorer(config *Config, logger *zap.Logger) (storage.Storer, error) {
-	switch config.Storage.StorageType {
+	switch config.Storage.Type {
 	case storage.DataStore:
 		return storage.NewDatastore(config.GCPProjectID, config.Storage, logger)
 	case storage.InMemory:

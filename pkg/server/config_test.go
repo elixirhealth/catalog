@@ -16,12 +16,12 @@ func TestNewDefaultConfig(t *testing.T) {
 func TestConfig_WithStorage(t *testing.T) {
 	c1, c2, c3 := &Config{}, &Config{}, &Config{}
 	c1.WithDefaultStorage()
-	assert.Equal(t, c1.Storage.StorageType, c2.WithStorage(nil).Storage.StorageType)
+	assert.Equal(t, c1.Storage.Type, c2.WithStorage(nil).Storage.Type)
 	assert.NotEqual(t,
-		c1.Storage.StorageType,
+		c1.Storage.Type,
 		c3.WithStorage(
-			&storage.Parameters{StorageType: storage.DataStore},
-		).Storage.StorageType,
+			&storage.Parameters{Type: storage.DataStore},
+		).Storage.Type,
 	)
 }
 

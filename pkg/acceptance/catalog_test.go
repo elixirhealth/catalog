@@ -53,7 +53,7 @@ func TestAcceptance(t *testing.T) {
 		nSearches:      4,
 		nAuthorPubKeys: 4,
 		nReaderPubKeys: 4,
-		gcpProjectID:   "dummy-courier-acceptance",
+		gcpProjectID:   "dummy-acceptance-id",
 		logLevel:       zapcore.InfoLevel,
 		putTimeout:     3 * time.Second,
 		searchTimeout:  3 * time.Second,
@@ -114,7 +114,7 @@ func setUp(params *parameters) *state {
 	for i := uint(0); i < params.nAuthorPubKeys; i++ {
 		authorPubKeys[i] = util.RandBytes(rng, api.ECPubKeyLength)
 	}
-	readerPubKeys := make([][]byte, params.nAuthorPubKeys)
+	readerPubKeys := make([][]byte, params.nReaderPubKeys)
 	for i := uint(0); i < params.nReaderPubKeys; i++ {
 		readerPubKeys[i] = util.RandBytes(rng, api.ECPubKeyLength)
 	}
@@ -167,7 +167,7 @@ func newCatalogConfigs(params *parameters) ([]*server.Config, []*net.TCPAddr) {
 
 	// set eviction params to ensure that evictions actually happen during test
 	storageParams := &storage.Parameters{
-		StorageType:        storage.DataStore,
+		Type:               storage.DataStore,
 		SearchQueryTimeout: params.searchTimeout,
 	}
 
