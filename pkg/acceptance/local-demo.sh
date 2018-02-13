@@ -32,7 +32,7 @@ docker network create catalog
 echo
 echo "starting catalog..."
 port=10100
-name="catalog-${c}"
+name="catalog-0"
 docker run --name "${name}" --net=catalog -d -p ${port}:${port} ${CATALOG_IMAGE} \
     start \
     --logLevel "${CATALOG_LOG_LEVEL}" \
