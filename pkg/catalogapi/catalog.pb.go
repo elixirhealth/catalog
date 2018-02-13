@@ -61,12 +61,20 @@ func (m *PutResponse) String() string            { return proto.CompactTextStrin
 func (*PutResponse) ProtoMessage()               {}
 func (*PutResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
+// SearchRequest contains the parameters of the search. The entry and author/reader public key
+// fields are equality filters, of which one or more must be set.
 type SearchRequest struct {
-	EntryKey        []byte `protobuf:"bytes,1,opt,name=entry_key,json=entryKey,proto3" json:"entry_key,omitempty"`
+	// 32-byte equality filter for the entry key
+	EntryKey []byte `protobuf:"bytes,1,opt,name=entry_key,json=entryKey,proto3" json:"entry_key,omitempty"`
+	// 33-byte equality filter for the (compressed) author public key
 	AuthorPublicKey []byte `protobuf:"bytes,2,opt,name=author_public_key,json=authorPublicKey,proto3" json:"author_public_key,omitempty"`
+	// 33-byte equality filter for the (compressed) reader public key
 	ReaderPublicKey []byte `protobuf:"bytes,3,opt,name=reader_public_key,json=readerPublicKey,proto3" json:"reader_public_key,omitempty"`
-	Before          int64  `protobuf:"varint,4,opt,name=before" json:"before,omitempty"`
-	Limit           uint32 `protobuf:"varint,5,opt,name=limit" json:"limit,omitempty"`
+	// microsecond epoch time exclusive filter to return only results received before a given
+	// timestamp
+	Before int64 `protobuf:"varint,4,opt,name=before" json:"before,omitempty"`
+	// maximum number of results to return
+	Limit uint32 `protobuf:"varint,5,opt,name=limit" json:"limit,omitempty"`
 }
 
 func (m *SearchRequest) Reset()                    { *m = SearchRequest{} }
@@ -230,7 +238,9 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Catalog service
 
 type CatalogClient interface {
+	// Put adds a publication receipt to the catalog.
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
+	// Search finds publication receipts matching certain filters.
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
 }
 
@@ -263,7 +273,9 @@ func (c *catalogClient) Search(ctx context.Context, in *SearchRequest, opts ...g
 // Server API for Catalog service
 
 type CatalogServer interface {
+	// Put adds a publication receipt to the catalog.
 	Put(context.Context, *PutRequest) (*PutResponse, error)
+	// Search finds publication receipts matching certain filters.
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
 }
 

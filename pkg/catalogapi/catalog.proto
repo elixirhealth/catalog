@@ -4,8 +4,10 @@ package catalogapi;
 
 service Catalog {
 
+    // Put adds a publication receipt to the catalog.
     rpc Put (PutRequest) returns (PutResponse) {}
 
+    // Search finds publication receipts matching certain filters.
     rpc Search (SearchRequest) returns (SearchResponse) {}
 }
 
@@ -16,11 +18,24 @@ message PutRequest {
 message PutResponse {
 }
 
+// SearchRequest contains the parameters of the search. The entry and author/reader public key
+// fields are equality filters, of which one or more must be set.
 message SearchRequest {
+
+    // 32-byte equality filter for the entry key
     bytes entry_key = 1;
+
+    // 33-byte equality filter for the (compressed) author public key
     bytes author_public_key = 2;
+
+    // 33-byte equality filter for the (compressed) reader public key
     bytes reader_public_key = 3;
+
+    // microsecond epoch time exclusive filter to return only results received before a given
+    // timestamp
     int64 before = 4;
+
+    // maximum number of results to return
     uint32 limit = 5;
 }
 
