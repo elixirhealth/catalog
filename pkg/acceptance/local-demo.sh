@@ -29,17 +29,14 @@ echo
 echo "creating catalog docker network..."
 docker network create catalog
 
-# TODO start and healthcheck dependency services
-
 echo
 echo "starting catalog..."
 port=10100
-name="catalog-${c}"
+name="catalog-0"
 docker run --name "${name}" --net=catalog -d -p ${port}:${port} ${CATALOG_IMAGE} \
     start \
     --logLevel "${CATALOG_LOG_LEVEL}" \
     --serverPort ${port}
-    # TODO add other relevant args
 catalog_addrs="${name}:${port}"
 catalog_containers="${name}"
 
@@ -51,7 +48,9 @@ docker run --rm --net=catalog ${CATALOG_IMAGE} test health \
 
 echo
 echo "testing catalog ..."
-# TODO
+docker run --rm --net=catalog ${CATALOG_IMAGE} test io \
+    --catalogs "${catalog_addrs}" \
+    --logLevel "${CATALOG_LOG_LEVEL}"
 
 echo
 echo "cleaning up..."

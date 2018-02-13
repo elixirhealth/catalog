@@ -27,7 +27,7 @@ func TestNewCatalog_ok(t *testing.T) {
 func TestNewCatalog_err(t *testing.T) {
 	badConfigs := map[string]*Config{
 		"empty ProjectID": NewDefaultConfig().WithStorage(
-			&storage.Parameters{StorageType: storage.DataStore},
+			&storage.Parameters{Type: storage.DataStore},
 		),
 	}
 	for desc, badConfig := range badConfigs {

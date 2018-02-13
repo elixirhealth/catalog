@@ -15,6 +15,7 @@ const (
 	logBeforeTimeFilter        = "before_time_filter"
 	logNResults                = "n_results"
 	logStorage                 = "storage"
+	logGCPProjectID            = "gcp_project_id"
 )
 
 func logPutRequestFields(rq *catalogapi.PutRequest) []zapcore.Field {
