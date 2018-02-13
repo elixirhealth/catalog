@@ -57,6 +57,10 @@ func init() {
 		"port for profiler endpoints (when enabled)")
 	startCmd.Flags().Bool(profileFlag, bserver.DefaultProfile,
 		"whether to enable profiler")
+	startCmd.Flags().Bool(storageInMemoryFlag, true,
+		"use in-memory storage")
+	startCmd.Flags().Bool(storageDataStoreFlag, false,
+		"use GCP DataStore storage")
 	startCmd.Flags().String(gcpProjectIDFlag, "", "GCP project ID")
 	startCmd.Flags().Duration(searchTimeoutFlag, storage.DefaultSearchQueryTimeout,
 		"timeout for Search DataStore requests")
