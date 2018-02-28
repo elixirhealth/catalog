@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package catalogapi;
+
+service Catalog {
+
+    rpc Put (PutRequest) returns (PutResponse) {}
+
+    rpc Search (SearchRequest) returns (SearchResponse) {}
+}
+
+message PutRequest {
+    Publication pub = 1;
+}
+
+message PutResponse {}
+
+message SearchRequest {
+    bytes author_public_key = 1;
+    bytes reader_public_key = 2;
+    Date received_date_start = 3;
+    Date received_date_end = 4;
+    int32 limit = 5;
+}
+
+message SearchResponse {
+    repeated Publication pubs = 1;
+    Date until_date = 2;
+}
+
+// Publication is a libri publication plus a receipt time, intentionally defined separately to
+// give us the flexibility down the road to add things to one and not the other.
+message Publication {
+    bytes envelope_key = 1;
+    bytes entry_key = 2;
+    bytes author_public_key = 3;
+    bytes reader_public_key = 4;
+    int64 receieved_time = 5;
+}
+
+message Date {
+    int32 year = 1;
+    int32 month = 2;
+    int32 day = 3;
+}
