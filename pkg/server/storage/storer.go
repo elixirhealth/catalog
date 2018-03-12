@@ -37,6 +37,7 @@ var (
 	// DefaultSearchQueryTimeout is the default timeout for search queries.
 	DefaultSearchQueryTimeout = 3 * time.Second
 
+	// DefaultTimeout is the default timeout for DataStore operations (e.g., Get, Put).
 	DefaultTimeout = 1 * time.Second
 
 	minBeforeTime = time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
