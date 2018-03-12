@@ -8,20 +8,8 @@ import (
 	"github.com/drausin/libri/libri/common/id"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
 	"go.uber.org/zap/zapcore"
-)
-
-const (
-	// Unspecified indicates when the storage type is not specified (and thus should take the
-	// default value).
-	Unspecified Type = iota
-
-	// InMemory indicates an ephemeral, in-memory (and thus not highly available) storage. This
-	// storage layer should generally only be used during testing and not in production.
-	InMemory
-
-	// DataStore indicates a (highly available) storage backed by GCP DataStore.
-	DataStore
 )
 
 var (
@@ -44,10 +32,13 @@ var (
 		minBeforeTime.String())
 
 	// DefaultStorage is the default storage type.
-	DefaultStorage = InMemory
+	DefaultStorage = bstorage.Memory
 
 	// DefaultSearchQueryTimeout is the default timeout for search queries.
-	DefaultSearchQueryTimeout = 5 * time.Second
+	DefaultSearchQueryTimeout = 3 * time.Second
+
+	// DefaultTimeout is the default timeout for DataStore operations (e.g., Get, Put).
+	DefaultTimeout = 1 * time.Second
 
 	minBeforeTime = time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
 )
@@ -58,24 +49,12 @@ type Storer interface {
 	Search(filters *SearchFilters, limit uint32) ([]*api.PublicationReceipt, error)
 }
 
-// Type indicates the storage backend type.
-type Type int
-
-func (t Type) String() string {
-	switch t {
-	case InMemory:
-		return "InMemory"
-	case DataStore:
-		return "DataStore"
-	default:
-		return "Unspecified"
-	}
-}
-
 // Parameters defines the parameters of the Storer.
 type Parameters struct {
-	Type               Type
+	Type               bstorage.Type
 	SearchQueryTimeout time.Duration
+	GetTimeout         time.Duration
+	PutTimeout         time.Duration
 }
 
 // NewDefaultParameters returns a *Parameters object with default values.
@@ -83,6 +62,8 @@ func NewDefaultParameters() *Parameters {
 	return &Parameters{
 		Type:               DefaultStorage,
 		SearchQueryTimeout: DefaultSearchQueryTimeout,
+		GetTimeout:         DefaultTimeout,
+		PutTimeout:         DefaultTimeout,
 	}
 }
 

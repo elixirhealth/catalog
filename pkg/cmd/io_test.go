@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/elxirhealth/catalog/pkg/server"
-	"github.com/elxirhealth/catalog/pkg/server/storage"
+	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zapcore"
@@ -18,7 +18,7 @@ func TestTestIO(t *testing.T) {
 
 	// start in-memory catalog
 	config := server.NewDefaultConfig()
-	config.Storage.Type = storage.InMemory
+	config.Storage.Type = bstorage.Memory
 	config.LogLevel = zapcore.DebugLevel
 	config.ServerPort = 10200
 	config.MetricsPort = 10201

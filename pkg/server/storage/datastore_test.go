@@ -16,7 +16,7 @@ import (
 	"github.com/drausin/libri/libri/common/logging"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
-	"github.com/elxirhealth/service-base/pkg/server/storage"
+	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
 	"github.com/elxirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -29,8 +29,9 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	dataDir, err := ioutil.TempDir("", "catalog-datastore-test")
 	assert.Nil(t, err)
 	defer cerrors.MaybePanic(os.RemoveAll(dataDir))
-	datastoreProc := storage.StartDatastoreEmulator(dataDir)
-	defer storage.StopDatastoreEmulator(datastoreProc)
+	datastoreProc := bstorage.StartDatastoreEmulator(dataDir)
+	time.Sleep(5 * time.Second)
+	defer bstorage.StopDatastoreEmulator(datastoreProc)
 
 	lg := logging.NewDevInfoLogger()
 	d, err := NewDatastore("dummy-project-id", NewDefaultParameters(), lg)
@@ -219,6 +220,8 @@ func TestDatastoreStorer_Put_err(t *testing.T) {
 			getErr: datastore.ErrNoSuchEntity,
 			putErr: errors.New("some Put error"),
 		},
+		logger: lg,
+		params: params,
 	}
 	err = d.Put(pr)
 	assert.NotNil(t, err)
@@ -317,11 +320,9 @@ type fixedDatastoreClient struct {
 	runResult  *datastore.Iterator
 }
 
-func (f *fixedDatastoreClient) Count(ctx context.Context, q *datastore.Query) (int, error) {
-	return f.countValue, f.countErr
-}
-
-func (f *fixedDatastoreClient) Put(key *datastore.Key, value interface{}) (*datastore.Key, error) {
+func (f *fixedDatastoreClient) Put(
+	ctx context.Context, key *datastore.Key, value interface{},
+) (*datastore.Key, error) {
 	if f.putErr != nil {
 		return nil, f.putErr
 	}
@@ -329,7 +330,15 @@ func (f *fixedDatastoreClient) Put(key *datastore.Key, value interface{}) (*data
 	return key, nil
 }
 
-func (f *fixedDatastoreClient) Get(key *datastore.Key, dest interface{}) error {
+func (f *fixedDatastoreClient) PutMulti(
+	context.Context, []*datastore.Key, interface{},
+) ([]*datastore.Key, error) {
+	panic("implement me")
+}
+
+func (f *fixedDatastoreClient) Get(
+	ctx context.Context, key *datastore.Key, dest interface{},
+) error {
 	if f.getErr != nil {
 		return f.getErr
 	}
@@ -347,9 +356,19 @@ func (f *fixedDatastoreClient) Get(key *datastore.Key, dest interface{}) error {
 	return nil
 }
 
-func (f *fixedDatastoreClient) Delete(keys []*datastore.Key) error {
+func (f *fixedDatastoreClient) GetMulti(
+	ctx context.Context, keys []*datastore.Key, dst interface{},
+) error {
+	panic("implement me")
+}
+
+func (f *fixedDatastoreClient) Delete(ctx context.Context, keys []*datastore.Key) error {
 	f.value = nil
 	return f.deleteErr
+}
+
+func (f *fixedDatastoreClient) Count(ctx context.Context, q *datastore.Query) (int, error) {
+	return f.countValue, f.countErr
 }
 
 func (f *fixedDatastoreClient) Run(ctx context.Context, q *datastore.Query) *datastore.Iterator {

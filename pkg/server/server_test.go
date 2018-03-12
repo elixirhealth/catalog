@@ -12,6 +12,7 @@ import (
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
 	"github.com/elxirhealth/catalog/pkg/server/storage"
 	"github.com/elxirhealth/service-base/pkg/server"
+	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
 	"github.com/elxirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +28,7 @@ func TestNewCatalog_ok(t *testing.T) {
 func TestNewCatalog_err(t *testing.T) {
 	badConfigs := map[string]*Config{
 		"empty ProjectID": NewDefaultConfig().WithStorage(
-			&storage.Parameters{Type: storage.DataStore},
+			&storage.Parameters{Type: bstorage.DataStore},
 		),
 	}
 	for desc, badConfig := range badConfigs {

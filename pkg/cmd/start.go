@@ -10,6 +10,7 @@ import (
 	"github.com/elxirhealth/catalog/pkg/server"
 	"github.com/elxirhealth/catalog/pkg/server/storage"
 	bserver "github.com/elxirhealth/service-base/pkg/server"
+	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -21,7 +22,7 @@ const (
 	profilerPortFlag     = "profilerPort"
 	profileFlag          = "profile"
 	gcpProjectIDFlag     = "gcpProjectID"
-	storageInMemoryFlag  = "storageInMemory"
+	storageMemoryFlag    = "storageMemory"
 	storageDataStoreFlag = "storageDataStore"
 	searchTimeoutFlag    = "searchTimeout"
 )
@@ -57,7 +58,7 @@ func init() {
 		"port for profiler endpoints (when enabled)")
 	startCmd.Flags().Bool(profileFlag, bserver.DefaultProfile,
 		"whether to enable profiler")
-	startCmd.Flags().Bool(storageInMemoryFlag, true,
+	startCmd.Flags().Bool(storageMemoryFlag, true,
 		"use in-memory storage")
 	startCmd.Flags().Bool(storageDataStoreFlag, false,
 		"use GCP DataStore storage")
@@ -96,15 +97,15 @@ func getCatalogConfig() (*server.Config, error) {
 	return c, nil
 }
 
-func getStorageType() (storage.Type, error) {
-	if viper.GetBool(storageInMemoryFlag) && viper.GetBool(storageDataStoreFlag) {
-		return storage.Unspecified, errMultipleStorageTypes
+func getStorageType() (bstorage.Type, error) {
+	if viper.GetBool(storageMemoryFlag) && viper.GetBool(storageDataStoreFlag) {
+		return bstorage.Unspecified, errMultipleStorageTypes
 	}
-	if viper.GetBool(storageInMemoryFlag) {
-		return storage.InMemory, nil
+	if viper.GetBool(storageMemoryFlag) {
+		return bstorage.Memory, nil
 	}
 	if viper.GetBool(storageDataStoreFlag) {
-		return storage.DataStore, nil
+		return bstorage.DataStore, nil
 	}
-	return storage.Unspecified, errNoStorageType
+	return bstorage.Unspecified, errNoStorageType
 }
