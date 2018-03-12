@@ -12,8 +12,8 @@ import (
 	"github.com/drausin/libri/libri/common/parse"
 	api2 "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	"github.com/elxirhealth/catalog/pkg/client"
 	"github.com/elxirhealth/catalog/pkg/server/storage"
-	"github.com/elxirhealth/service-base/pkg/server"
 	"github.com/elxirhealth/service-base/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -67,14 +67,12 @@ func testIO() error {
 	nPuts := uint(viper.GetInt(nPutsFlag))
 	nSearches := uint(viper.GetInt(nSearchesFlag))
 
-	dialer := server.NewInsecureDialer()
 	catalogClients := make([]api.CatalogClient, len(addrs))
 	for i, addr := range addrs {
-		conn, err := dialer.Dial(addr.String())
+		catalogClients[i], err = client.NewInsecure(addr.String())
 		if err != nil {
 			return err
 		}
-		catalogClients[i] = api.NewCatalogClient(conn)
 	}
 
 	authorPubKeys := make([][]byte, nAuthorPubKeys)
