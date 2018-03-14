@@ -90,26 +90,23 @@ func validateSearchFilters(f *SearchFilters) error {
 	if !validateTimeFilter(f.Before) || !validateTimeFilter(f.After) {
 		return ErrEarlierTimeMin
 	}
-	hasFilters := f.AuthorEntityID != "" || f.ReaderEntityID != ""
-	present, valid := validateBytesFilters(f.EntryKey, id.Length)
+	hasFilts := f.AuthorEntityID != "" || f.ReaderEntityID != ""
+	hasFilts, valid := validateBytesFilters(f.EntryKey, id.Length, hasFilts)
 	if !valid {
 		return ErrUnexpectedEntryKeyLength
 	}
-	hasFilters = hasFilters || present
 
-	present, valid = validateBytesFilters(f.AuthorPublicKey, libriapi.ECPubKeyLength)
+	hasFilts, valid = validateBytesFilters(f.AuthorPublicKey, libriapi.ECPubKeyLength, hasFilts)
 	if !valid {
 		return ErrUnexpectedAuthorPubKeyLength
 	}
-	hasFilters = hasFilters || present
 
-	present, valid = validateBytesFilters(f.ReaderPublicKey, libriapi.ECPubKeyLength)
+	hasFilts, valid = validateBytesFilters(f.ReaderPublicKey, libriapi.ECPubKeyLength, hasFilts)
 	if !valid {
 		return ErrUnexpectedReaderPubKeyLength
 	}
-	hasFilters = hasFilters || present
 
-	if !hasFilters {
+	if !hasFilts {
 		return ErrNoEqualityFilters
 	}
 	return nil
@@ -119,14 +116,14 @@ func validateTimeFilter(filter int64) (valid bool) {
 	return filter == 0 || api.FromEpochMicros(filter).After(minFilterTime)
 }
 
-func validateBytesFilters(filter []byte, length int) (present bool, valid bool) {
+func validateBytesFilters(filter []byte, length int, hasFilters bool) (bool, bool) {
 	if filter != nil {
 		if len(filter) != length {
 			return true, false
 		}
 		return true, true
 	}
-	return false, true
+	return hasFilters, true
 }
 
 // publicationReceipts is a min-heap of PublicationReceipt objects sorted ascending by ReceivedTime
