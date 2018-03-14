@@ -75,19 +75,34 @@ func (f *memoryStorer) Search(
 
 func matchesFilter(filters *SearchFilters, pr *api.PublicationReceipt) bool {
 	// assume that at least one filter is set per validateSearchFilters
-	if filters.EntryKey != nil && !bytes.Equal(filters.EntryKey, pr.EntryKey) {
+	if bytesNotMatch(filters.EntryKey, pr.EntryKey) {
 		return false
 	}
-	if filters.AuthorPublicKey != nil &&
-		!bytes.Equal(filters.AuthorPublicKey, pr.AuthorPublicKey) {
+	if bytesNotMatch(filters.AuthorPublicKey, pr.AuthorPublicKey) {
 		return false
 	}
-	if filters.ReaderPublicKey != nil &&
-		!bytes.Equal(filters.ReaderPublicKey, pr.ReaderPublicKey) {
+	if stringsNotMatch(filters.AuthorEntityID, pr.AuthorEntityId) {
+		return false
+	}
+	if bytesNotMatch(filters.ReaderPublicKey, pr.ReaderPublicKey) {
+		return false
+	}
+	if stringsNotMatch(filters.ReaderEntityID, pr.ReaderEntityId) {
 		return false
 	}
 	if filters.Before != 0 && pr.ReceivedTime >= filters.Before {
 		return false
 	}
+	if filters.After != 0 && pr.ReceivedTime < filters.After {
+		return false
+	}
 	return true
+}
+
+func stringsNotMatch(filter, value string) bool {
+	return filter != "" && filter != value
+}
+
+func bytesNotMatch(filter, value []byte) bool {
+	return filter != nil && !bytes.Equal(filter, value)
 }

@@ -28,8 +28,14 @@ func TestValidateSearchFilters_ok(t *testing.T) {
 		"author public key only": {
 			AuthorPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
 		},
+		"author entity ID only": {
+			AuthorEntityID: "some entity ID",
+		},
 		"reader public key only": {
 			ReaderPublicKey: util.RandBytes(rng, libriapi.ECPubKeyLength),
+		},
+		"reader entity ID only": {
+			ReaderEntityID: "some entity ID",
 		},
 	}
 	for info, f := range fs {
@@ -45,6 +51,12 @@ func TestValidateSearchFilters_err(t *testing.T) {
 		},
 		"before filter in epoch milli-secs rather than micro-secs": {
 			Before: time.Now().Unix() * 1E3,
+		},
+		"after filter in epoch secs rather than micro-secs": {
+			After: time.Now().Unix(),
+		},
+		"after filter in epoch milli-secs rather than micro-secs": {
+			After: time.Now().Unix() * 1E3,
 		},
 		"bad entry key": {
 			EntryKey: []byte{1, 2, 3},

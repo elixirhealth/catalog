@@ -36,7 +36,9 @@ type PublicationReceipt struct {
 	EnvelopeKey     *datastore.Key `datastore:"__key__"`
 	EntryKey        string         `datastore:"entry_key"`
 	AuthorPublicKey string         `datastore:"author_public_key"`
+	AuthorEntityID  string         `datastore:"author_entity_id"`
 	ReaderPublicKey string         `datastore:"reader_public_key"`
+	ReaderEntityID  string         `datastore:"reader_entity_id"`
 	ReceivedDate    int32          `datastore:"received_date"`
 	ReceivedTime    time.Time      `datastore:"received_time,noindex"`
 }
@@ -116,7 +118,7 @@ func (d *datastoreStorer) Search(
 		}
 		d.logger.Debug("processing search result",
 			zap.String(logEnvelopeKey, stored.EnvelopeKey.Name))
-		if done := processStored(stored, fs.Before, storedResults, limit); done {
+		if done := processStored(stored, fs.Before, fs.After, storedResults, limit); done {
 			break
 		}
 	}
@@ -141,12 +143,18 @@ func storedResultsToList(storedResults heap.Interface) ([]*api.PublicationReceip
 func processStored(
 	stored *PublicationReceipt,
 	beforeFilter int64,
+	afterFilter int64,
 	storedResults *publicationReceipts,
 	limit uint32,
 ) bool {
 	before := stored.ReceivedTime.Before(api.FromEpochMicros(beforeFilter))
+	after := !stored.ReceivedTime.Before(api.FromEpochMicros(afterFilter)) // inclusive after
 	if beforeFilter != 0 && !before {
 		// don't add a result if we have a before filter and the result is after it
+		return false
+	}
+	if afterFilter != 0 && !after {
+		// don't add a result if we have an after filter and the result is before it
 		return false
 	}
 	dayChange := storedResults.Len() > 0 &&
@@ -169,8 +177,14 @@ func getSearchQuery(f *SearchFilters) *datastore.Query {
 	if f.AuthorPublicKey != nil {
 		q = q.Filter("author_public_key = ", hex.EncodeToString(f.AuthorPublicKey))
 	}
+	if f.AuthorEntityID != "" {
+		q = q.Filter("author_entity_id = ", f.AuthorEntityID)
+	}
 	if f.ReaderPublicKey != nil {
 		q = q.Filter("reader_public_key = ", hex.EncodeToString(f.ReaderPublicKey))
+	}
+	if f.ReaderEntityID != "" {
+		q = q.Filter("reader_entity_id = ", f.ReaderEntityID)
 	}
 	if f.EntryKey != nil {
 		q = q.Filter("entry_key = ", hex.EncodeToString(f.EntryKey))
@@ -187,7 +201,9 @@ func encodeStoredPubReceipt(pr *api.PublicationReceipt) *PublicationReceipt {
 	return &PublicationReceipt{
 		EntryKey:        hex.EncodeToString(pr.EntryKey),
 		AuthorPublicKey: hex.EncodeToString(pr.AuthorPublicKey),
+		AuthorEntityID:  pr.AuthorEntityId,
 		ReaderPublicKey: hex.EncodeToString(pr.ReaderPublicKey),
+		ReaderEntityID:  pr.ReaderEntityId,
 		ReceivedDate:    int32(pr.ReceivedTime / secsPerDay),
 		ReceivedTime:    api.FromEpochMicros(pr.ReceivedTime),
 	}
@@ -211,12 +227,14 @@ func decodeStoredPubReceipt(s *PublicationReceipt) (*api.PublicationReceipt, err
 	if err != nil {
 		return nil, err
 	}
+	pr.AuthorEntityId = s.AuthorEntityID
 	pr.AuthorPublicKey = v
 	v, err = hex.DecodeString(s.ReaderPublicKey)
 	if err != nil {
 		return nil, err
 	}
 	pr.ReaderPublicKey = v
+	pr.ReaderEntityId = s.ReaderEntityID
 
 	return pr, nil
 }
