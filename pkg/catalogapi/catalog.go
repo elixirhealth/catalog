@@ -53,6 +53,10 @@ var (
 	// ErrSearchZeroLimit denotes when a search request has a zero limit.
 	ErrSearchZeroLimit = errors.New("search zero limit not allowed")
 
+	// ErrAfterRequiresBefore denotes an a search request defines an after filter but no before
+	// filter.
+	ErrAfterRequiresBefore = errors.New("after time filter requires before filter to be set")
+
 	minReceivedTime = ToEpochMicros(time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC))
 )
 
@@ -68,6 +72,9 @@ func ValidatePutRequest(rq *PutRequest) error {
 func ValidateSearchRequest(rq *SearchRequest) error {
 	if rq.Limit == 0 {
 		return ErrSearchZeroLimit
+	}
+	if rq.After != 0 && rq.Before == 0 { // if after is defined, before must be too
+		return ErrAfterRequiresBefore
 	}
 	return nil
 }
@@ -91,9 +98,11 @@ func validatePresent(pr *PublicationReceipt) error {
 	if pr.AuthorPublicKey == nil {
 		return ErrMissingAuthorPublicKey
 	}
+	// ok for AuthorEntityID to be empty
 	if pr.ReaderPublicKey == nil {
 		return ErrMissingReaderPublicKey
 	}
+	// ok for ReaderEntityID to be empty
 	if pr.ReceivedTime == 0 {
 		return ErrMissingReceivedTime
 	}

@@ -28,15 +28,25 @@ message SearchRequest {
     // 33-byte equality filter for the (compressed) author public key
     bytes author_public_key = 2;
 
+    // equality filter for the author entity ID
+    string author_entity_id = 3;
+
     // 33-byte equality filter for the (compressed) reader public key
-    bytes reader_public_key = 3;
+    bytes reader_public_key = 4;
+
+    // equality filter for the reader entity ID
+    string reader_entity_id = 5;
 
     // microsecond epoch time exclusive filter to return only results received before a given
     // timestamp
-    int64 before = 4;
+    int64 before = 6;
+
+    // microsecond epoch time inclusive filter to return only results received after a given
+    // timestamp
+    int64 after = 7;
 
     // maximum number of results to return
-    uint32 limit = 5;
+    uint32 limit = 8;
 }
 
 message SearchResponse {
@@ -49,11 +59,13 @@ message PublicationReceipt {
     bytes envelope_key = 1;
     bytes entry_key = 2;
     bytes author_public_key = 3;
-    bytes reader_public_key = 4;
+    string author_entity_id = 4;
+    bytes reader_public_key = 5;
+    string reader_entity_id = 6;
 
     // received_time is epoch-time (microseconds since Jan 1, 1970) when the publication was
     // received.
-    int64 received_time = 5;
+    int64 received_time = 7;
 }
 
 // Date is a straightforward date.

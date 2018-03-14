@@ -50,37 +50,49 @@ func testStorerPutSearch(t *testing.T, s Storer) {
 	entryKey2 := append(make([]byte, id.Length-1), 6)
 	authorPub1 := append(make([]byte, libriapi.ECPubKeyLength-1), 7)
 	authorPub2 := append(make([]byte, libriapi.ECPubKeyLength-1), 8)
+	authorEntityID1 := "author entity ID 1"
+	authorEntityID2 := "author entity ID 2"
 	readerPub1 := append(make([]byte, libriapi.ECPubKeyLength-1), 9)
 	readerPub2 := append(make([]byte, libriapi.ECPubKeyLength-1), 10)
 	readerPub3 := append(make([]byte, libriapi.ECPubKeyLength-1), 11)
+	readerEntityID1 := "reader entity ID 1"
+	readerEntityID2 := "reader entity ID 2"
 
 	prs := []*api.PublicationReceipt{
 		{
 			EnvelopeKey:     envKey1,
 			EntryKey:        entryKey1,
 			AuthorPublicKey: authorPub1,
+			AuthorEntityId:  authorEntityID1,
 			ReaderPublicKey: readerPub1,
+			ReaderEntityId:  readerEntityID1,
 			ReceivedTime:    now - 5,
 		},
 		{
 			EnvelopeKey:     envKey2,
 			EntryKey:        entryKey1,
 			AuthorPublicKey: authorPub1,
+			AuthorEntityId:  authorEntityID1,
 			ReaderPublicKey: readerPub2,
+			ReaderEntityId:  readerEntityID2,
 			ReceivedTime:    now - 4,
 		},
 		{
 			EnvelopeKey:     envKey3,
 			EntryKey:        entryKey1,
 			AuthorPublicKey: authorPub1,
+			AuthorEntityId:  authorEntityID1,
 			ReaderPublicKey: readerPub3,
+			ReaderEntityId:  readerEntityID2,
 			ReceivedTime:    now - 3,
 		},
 		{
 			EnvelopeKey:     envKey4,
 			EntryKey:        entryKey2,
 			AuthorPublicKey: authorPub2,
+			AuthorEntityId:  authorEntityID2,
 			ReaderPublicKey: readerPub1,
+			ReaderEntityId:  readerEntityID1,
 			ReceivedTime:    now - 2,
 		},
 	}
@@ -101,7 +113,7 @@ func testStorerPutSearch(t *testing.T, s Storer) {
 	assert.Equal(t, envKey2, results[1].EnvelopeKey)
 	assert.Equal(t, envKey1, results[2].EnvelopeKey)
 
-	// check author filter
+	// check author pub key filter
 	f = &SearchFilters{
 		AuthorPublicKey: authorPub1,
 	}
@@ -112,7 +124,18 @@ func testStorerPutSearch(t *testing.T, s Storer) {
 	assert.Equal(t, envKey2, results[1].EnvelopeKey)
 	assert.Equal(t, envKey1, results[2].EnvelopeKey)
 
-	// check reader filter
+	// check author entity ID filter
+	f = &SearchFilters{
+		AuthorEntityID: authorEntityID1,
+	}
+	results, err = s.Search(f, limit)
+	assert.Nil(t, err)
+	assert.Len(t, results, 3)
+	assert.Equal(t, envKey3, results[0].EnvelopeKey)
+	assert.Equal(t, envKey2, results[1].EnvelopeKey)
+	assert.Equal(t, envKey1, results[2].EnvelopeKey)
+
+	// check reader pub key filter
 	f = &SearchFilters{
 		ReaderPublicKey: readerPub1,
 	}
@@ -121,6 +144,16 @@ func testStorerPutSearch(t *testing.T, s Storer) {
 	assert.Len(t, results, 2)
 	assert.Equal(t, envKey4, results[0].EnvelopeKey)
 	assert.Equal(t, envKey1, results[1].EnvelopeKey)
+
+	// check reader entity ID filter
+	f = &SearchFilters{
+		ReaderEntityID: readerEntityID2,
+	}
+	results, err = s.Search(f, limit)
+	assert.Nil(t, err)
+	assert.Len(t, results, 2)
+	assert.Equal(t, envKey3, results[0].EnvelopeKey)
+	assert.Equal(t, envKey2, results[1].EnvelopeKey)
 
 	// check entry + author filter
 	f = &SearchFilters{
@@ -142,6 +175,17 @@ func testStorerPutSearch(t *testing.T, s Storer) {
 	assert.Len(t, results, 2)
 	assert.Equal(t, envKey2, results[0].EnvelopeKey)
 	assert.Equal(t, envKey1, results[1].EnvelopeKey)
+
+	// check before + after filter
+	f = &SearchFilters{
+		EntryKey: entryKey1,
+		Before:   now - 3,
+		After:    now - 4,
+	}
+	results, err = s.Search(f, limit)
+	assert.Nil(t, err)
+	assert.Len(t, results, 1)
+	assert.Equal(t, envKey2, results[0].EnvelopeKey)
 
 	// check limit
 	f = &SearchFilters{

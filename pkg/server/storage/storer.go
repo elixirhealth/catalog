@@ -27,9 +27,8 @@ var (
 	// unexpected length.
 	ErrUnexpectedReaderPubKeyLength = errors.New("unexpected author public key filter length")
 
-	// ErrEarlierBeforeMin denotes when the before time filter is before the minimum date.
-	ErrEarlierBeforeMin = fmt.Errorf("before time filter earlier than %s",
-		minBeforeTime.String())
+	// ErrEarlierTimeMin denotes when a time filter is before the minimum date.
+	ErrEarlierTimeMin = fmt.Errorf("time filter earlier than %s", minFilterTime.String())
 
 	// DefaultStorage is the default storage type.
 	DefaultStorage = bstorage.Memory
@@ -40,7 +39,7 @@ var (
 	// DefaultTimeout is the default timeout for DataStore operations (e.g., Get, Put).
 	DefaultTimeout = 1 * time.Second
 
-	minBeforeTime = time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
+	minFilterTime = time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
 )
 
 // Storer stores and searches for *PublicationReceipts.
@@ -74,43 +73,57 @@ func (p *Parameters) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	return nil
 }
 
-// SearchFilters represents a set of filters for a search. If fields are non-null, an equality
-// constraint with its value is added to the search. The Before field is an epoch timestamp (
-// micro-seconds since Jan 1, 1970) and denotes an exclusive bound.
+// SearchFilters represents a set of filters for a search. If fields are non-null/non-empty, an
+// equality constraint with its value is added to the search. The Before field is an epoch
+// timestamp (micro-seconds since Jan 1, 1970) and denotes an exclusive bound.
 type SearchFilters struct {
 	EntryKey        []byte
 	AuthorPublicKey []byte
+	AuthorEntityID  string
 	ReaderPublicKey []byte
+	ReaderEntityID  string
+	After           int64
 	Before          int64
 }
 
 func validateSearchFilters(f *SearchFilters) error {
-	if f.Before != 0 && api.FromEpochMicros(f.Before).Before(minBeforeTime) {
-		return ErrEarlierBeforeMin
+	if !validateTimeFilter(f.Before) || !validateTimeFilter(f.After) {
+		return ErrEarlierTimeMin
 	}
-	hasFilters := false
-	if f.EntryKey != nil {
-		hasFilters = true
-		if len(f.EntryKey) != id.Length {
-			return ErrUnexpectedEntryKeyLength
-		}
+	hasFilts := f.AuthorEntityID != "" || f.ReaderEntityID != ""
+	hasFilts, valid := validateBytesFilters(f.EntryKey, id.Length, hasFilts)
+	if !valid {
+		return ErrUnexpectedEntryKeyLength
 	}
-	if f.AuthorPublicKey != nil {
-		hasFilters = true
-		if len(f.AuthorPublicKey) != libriapi.ECPubKeyLength {
-			return ErrUnexpectedAuthorPubKeyLength
-		}
+
+	hasFilts, valid = validateBytesFilters(f.AuthorPublicKey, libriapi.ECPubKeyLength, hasFilts)
+	if !valid {
+		return ErrUnexpectedAuthorPubKeyLength
 	}
-	if f.ReaderPublicKey != nil {
-		hasFilters = true
-		if len(f.ReaderPublicKey) != libriapi.ECPubKeyLength {
-			return ErrUnexpectedReaderPubKeyLength
-		}
+
+	hasFilts, valid = validateBytesFilters(f.ReaderPublicKey, libriapi.ECPubKeyLength, hasFilts)
+	if !valid {
+		return ErrUnexpectedReaderPubKeyLength
 	}
-	if !hasFilters {
+
+	if !hasFilts {
 		return ErrNoEqualityFilters
 	}
 	return nil
+}
+
+func validateTimeFilter(filter int64) (valid bool) {
+	return filter == 0 || api.FromEpochMicros(filter).After(minFilterTime)
+}
+
+func validateBytesFilters(filter []byte, length int, hasFilters bool) (bool, bool) {
+	if filter != nil {
+		if len(filter) != length {
+			return true, false
+		}
+		return true, true
+	}
+	return hasFilters, true
 }
 
 // publicationReceipts is a min-heap of PublicationReceipt objects sorted ascending by ReceivedTime

@@ -52,7 +52,10 @@ func (x *Catalog) Search(ctx context.Context, rq *api.SearchRequest) (*api.Searc
 	filters := &storage.SearchFilters{
 		EntryKey:        rq.EntryKey,
 		AuthorPublicKey: rq.AuthorPublicKey,
+		AuthorEntityID:  rq.AuthorEntityId,
 		ReaderPublicKey: rq.ReaderPublicKey,
+		ReaderEntityID:  rq.ReaderEntityId,
+		After:           rq.After,
 		Before:          rq.Before,
 	}
 	result, err := x.storer.Search(filters, rq.Limit)
