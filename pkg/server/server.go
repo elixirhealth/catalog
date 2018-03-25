@@ -1,9 +1,9 @@
 package server
 
 import (
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
-	"github.com/elxirhealth/catalog/pkg/server/storage"
-	"github.com/elxirhealth/service-base/pkg/server"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/catalog/pkg/server/storage"
+	"github.com/elixirhealth/service-base/pkg/server"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 )

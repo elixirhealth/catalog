@@ -1,7 +1,7 @@
 package server
 
 import (
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
 	"google.golang.org/grpc"
 )
 

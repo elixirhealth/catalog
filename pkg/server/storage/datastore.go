@@ -9,8 +9,8 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"github.com/drausin/libri/libri/common/id"
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
-	"github.com/elxirhealth/service-base/pkg/server/storage"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/service-base/pkg/server/storage"
 	"go.uber.org/zap"
 	"google.golang.org/api/iterator"
 )

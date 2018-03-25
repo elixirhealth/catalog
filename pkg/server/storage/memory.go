@@ -7,7 +7,7 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"github.com/drausin/libri/libri/common/id"
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
 	"go.uber.org/zap"
 )
 

@@ -9,11 +9,11 @@ import (
 
 	"github.com/drausin/libri/libri/common/id"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
-	"github.com/elxirhealth/catalog/pkg/server/storage"
-	"github.com/elxirhealth/service-base/pkg/server"
-	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
-	"github.com/elxirhealth/service-base/pkg/util"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/catalog/pkg/server/storage"
+	"github.com/elixirhealth/service-base/pkg/server"
+	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
+	"github.com/elixirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 

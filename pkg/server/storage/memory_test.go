@@ -9,8 +9,8 @@ import (
 	"github.com/drausin/libri/libri/common/id"
 	"github.com/drausin/libri/libri/common/logging"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
-	"github.com/elxirhealth/service-base/pkg/util"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )

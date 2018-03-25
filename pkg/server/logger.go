@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/drausin/libri/libri/common/id"
-	"github.com/elxirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/catalog/pkg/catalogapi"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
