@@ -19,7 +19,7 @@ CATALOG_TIMEOUT="${CATALOG_TIMEOUT:-5}"  # 10, or 20 for really sketchy network
 LOCAL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # container command constants
-CATALOG_IMAGE="gcr.io/elxir-core-infra/catalog:snapshot" # develop
+CATALOG_IMAGE="gcr.io/elixir-core-prod/catalog:snapshot" # develop
 
 echo
 echo "cleaning up from previous runs..."
