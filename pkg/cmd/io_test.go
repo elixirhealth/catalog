@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/elxirhealth/catalog/pkg/server"
-	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
+	"github.com/elixirhealth/catalog/pkg/server"
+	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zapcore"

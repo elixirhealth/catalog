@@ -7,8 +7,8 @@ import (
 
 	"github.com/drausin/libri/libri/common/id"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
-	api "github.com/elxirhealth/catalog/pkg/catalogapi"
-	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"go.uber.org/zap/zapcore"
 )
 

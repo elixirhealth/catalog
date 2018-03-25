@@ -3,8 +3,8 @@ package server
 import (
 	"testing"
 
-	"github.com/elxirhealth/catalog/pkg/server/storage"
-	bstorage "github.com/elxirhealth/service-base/pkg/server/storage"
+	"github.com/elixirhealth/catalog/pkg/server/storage"
+	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"github.com/stretchr/testify/assert"
 )
 

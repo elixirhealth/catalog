@@ -65,7 +65,7 @@
 
 [[projects]]
   branch = "develop"
-  name = "github.com/elxirhealth/service-base"
+  name = "github.com/elixirhealth/service-base"
   packages = [
     "pkg/server",
     "pkg/server/storage",

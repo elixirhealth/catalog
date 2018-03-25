@@ -9,8 +9,8 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/drausin/libri/libri/common/id"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
-	"github.com/elxirhealth/catalog/pkg/catalogapi"
-	"github.com/elxirhealth/service-base/pkg/util"
+	"github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 

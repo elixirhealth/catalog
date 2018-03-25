@@ -7,7 +7,7 @@ import (
 
 	"github.com/drausin/libri/libri/common/id"
 	"github.com/drausin/libri/libri/librarian/api"
-	"github.com/elxirhealth/service-base/pkg/util"
+	"github.com/elixirhealth/service-base/pkg/util"
 	"github.com/magiconair/properties/assert"
 )
 
