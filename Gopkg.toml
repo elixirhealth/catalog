@@ -28,3 +28,9 @@
     name = "github.com/elixirhealth/service-base"
     non-go = false
     unused-packages = false
+
+  [[prune.project]]
+    name = "github.com/ethereum/go-ethereum"
+    non-go = false
+    unused-packages = false
+
