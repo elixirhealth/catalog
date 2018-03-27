@@ -36,6 +36,7 @@ name="catalog-0"
 docker run --name "${name}" --net=catalog -d -p ${port}:${port} ${CATALOG_IMAGE} \
     start \
     --logLevel "${CATALOG_LOG_LEVEL}" \
+    --storageMemory \
     --serverPort ${port}
 catalog_addrs="${name}:${port}"
 catalog_containers="${name}"
