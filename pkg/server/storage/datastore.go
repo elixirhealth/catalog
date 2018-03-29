@@ -71,6 +71,7 @@ func (d *datastoreStorer) Put(pr *api.PublicationReceipt) error {
 		return err
 	}
 	pubKey := datastore.NameKey(publicationReceiptKind, id.Hex(pr.EnvelopeKey), nil)
+
 	ctx, cancel := context.WithTimeout(context.Background(), d.params.GetTimeout)
 	err := d.client.Get(ctx, pubKey, &PublicationReceipt{})
 	cancel()
