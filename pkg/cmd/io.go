@@ -95,9 +95,9 @@ func testIO() error {
 			ReceivedTime:    api.ToEpochMicros(time.Now()),
 		}
 		rq := &api.PutRequest{Value: pr}
-		client := catalogClients[rng.Int31n(int32(len(catalogClients)))]
+		catClient := catalogClients[rng.Int31n(int32(len(catalogClients)))]
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		_, err := client.Put(ctx, rq)
+		_, err := catClient.Put(ctx, rq)
 		cancel()
 		if err != nil {
 			logger.Error("publication put failed", zap.Error(err))

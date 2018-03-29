@@ -70,6 +70,8 @@ func NewDefaultParameters() *Parameters {
 func (p *Parameters) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	oe.AddString(logStorageType, p.Type.String())
 	oe.AddDuration(logSearchQueryTimeout, p.SearchQueryTimeout)
+	oe.AddDuration(logPutTimeout, p.PutTimeout)
+	oe.AddDuration(logGetTimeout, p.GetTimeout)
 	return nil
 }
 

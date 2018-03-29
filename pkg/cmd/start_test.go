@@ -40,6 +40,8 @@ func TestGetCatalogConfig(t *testing.T) {
 	assert.Equal(t, profile, c.Profile)
 	assert.Equal(t, gcpProjectID, c.GCPProjectID)
 	assert.Equal(t, searchTimeout, c.Storage.SearchQueryTimeout)
+	assert.NotEmpty(t, c.Storage.GetTimeout)
+	assert.NotEmpty(t, c.Storage.PutTimeout)
 	assert.Equal(t, bstorage.DataStore, c.Storage.Type)
 }
 
