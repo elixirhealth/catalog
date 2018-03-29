@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	cerrors "github.com/drausin/libri/libri/common/errors"
 	"github.com/drausin/libri/libri/common/logging"
@@ -37,6 +38,7 @@ var startCmd = &cobra.Command{
 	Short: "start a catalog server",
 	Run: func(cmd *cobra.Command, args []string) {
 		writeBanner(os.Stdout)
+		time.Sleep(100 * time.Millisecond)
 		config, err := getCatalogConfig()
 		if err != nil {
 			log.Fatal(err)
@@ -77,10 +79,10 @@ func getCatalogConfig() (*server.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	storageConfig := &storage.Parameters{
-		Type:               storageType,
-		SearchQueryTimeout: viper.GetDuration(searchTimeoutFlag),
-	}
+
+	storageConfig := storage.NewDefaultParameters()
+	storageConfig.Type = storageType
+	storageConfig.SearchQueryTimeout = viper.GetDuration(searchTimeoutFlag)
 
 	c := server.NewDefaultConfig()
 	c.WithServerPort(uint(viper.GetInt(serverPortFlag))).
