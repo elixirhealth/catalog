@@ -71,10 +71,9 @@ func (d *datastoreStorer) Put(pr *api.PublicationReceipt) error {
 		return err
 	}
 	pubKey := datastore.NameKey(publicationReceiptKind, id.Hex(pr.EnvelopeKey), nil)
-
-	//ctx, cancel := context.WithTimeout(context.Background(), d.params.GetTimeout)
-	err := d.client.Get(context.Background(), pubKey, &PublicationReceipt{})
-	//cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), d.params.GetTimeout)
+	err := d.client.Get(ctx, pubKey, &PublicationReceipt{})
+	cancel()
 	if err != nil && err != datastore.ErrNoSuchEntity {
 		return err
 	} else if err == nil {
@@ -84,9 +83,9 @@ func (d *datastoreStorer) Put(pr *api.PublicationReceipt) error {
 		return nil
 	}
 	spr := encodeStoredPubReceipt(pr)
-	//ctx, cancel = context.WithTimeout(context.Background(), d.params.PutTimeout)
-	//defer cancel()
-	if _, err = d.client.Put(context.Background(), pubKey, spr); err != nil {
+	ctx, cancel = context.WithTimeout(context.Background(), d.params.PutTimeout)
+	defer cancel()
+	if _, err = d.client.Put(ctx, pubKey, spr); err != nil {
 		return err
 	}
 	d.logger.Debug("stored new publication", zap.String(logEnvelopeKey, id.Hex(pr.EnvelopeKey)))
