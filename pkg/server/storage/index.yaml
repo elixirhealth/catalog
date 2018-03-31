@@ -1,0 +1,26 @@
+indexes:
+- kind: publicationReceipt
+  properties:
+  - name: entry_key
+  - name: received_date
+    direction: desc
+- kind: publicationReceipt
+  properties:
+  - name: author_public_key
+  - name: received_date
+    direction: desc
+- kind: publicationReceipt
+  properties:
+  - name: author_entity_id
+  - name: received_date
+    direction: desc
+- kind: publicationReceipt
+  properties:
+  - name: reader_public_key
+  - name: received_date
+    direction: desc
+- kind: publicationReceipt
+  properties:
+  - name: reader_entity_id
+  - name: received_date
+    direction: desc
