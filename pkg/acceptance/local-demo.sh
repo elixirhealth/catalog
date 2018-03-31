@@ -8,7 +8,7 @@ docker_cleanup() {
     CONTAINERS='libri|catalog'
     docker ps | grep -E ${CONTAINERS} | awk '{print $1}' | xargs -I {} docker stop {} || true
     docker ps -a | grep -E ${CONTAINERS} | awk '{print $1}' | xargs -I {} docker rm {} || true
-    docker network list | grep ${CONTAINERS} | awk '{print $2}' | xargs -I {} docker network rm {} || true
+    docker network list | grep -E ${CONTAINERS} | awk '{print $2}' | xargs -I {} docker network rm {} || true
 }
 
 # optional settings (generally defaults should be fine, but sometimes useful for debugging)
