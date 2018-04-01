@@ -1,4 +1,4 @@
-package storage
+package datastore
 
 import (
 	"context"
@@ -16,6 +16,7 @@ import (
 	"github.com/drausin/libri/libri/common/logging"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/catalog/pkg/server/storage"
 	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"github.com/elixirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
@@ -34,171 +35,14 @@ func TestDatastoreStorer_PutSearch(t *testing.T) {
 	defer bstorage.StopDatastoreEmulator(datastoreProc)
 
 	lg := logging.NewDevInfoLogger()
-	d, err := NewDatastore("dummy-project-id", NewDefaultParameters(), lg)
+	d, err := New("dummy-project-id", storage.NewDefaultParameters(), lg)
 	assert.Nil(t, err)
 
-	testStorerPutSearch(t, d)
-}
-
-func testStorerPutSearch(t *testing.T, s Storer) {
-	now := time.Now().Unix() * 1E6
-	envKey1 := append(make([]byte, id.Length-1), 1)
-	envKey2 := append(make([]byte, id.Length-1), 2)
-	envKey3 := append(make([]byte, id.Length-1), 3)
-	envKey4 := append(make([]byte, id.Length-1), 4)
-	entryKey1 := append(make([]byte, id.Length-1), 5)
-	entryKey2 := append(make([]byte, id.Length-1), 6)
-	authorPub1 := append(make([]byte, libriapi.ECPubKeyLength-1), 7)
-	authorPub2 := append(make([]byte, libriapi.ECPubKeyLength-1), 8)
-	authorEntityID1 := "author entity ID 1"
-	authorEntityID2 := "author entity ID 2"
-	readerPub1 := append(make([]byte, libriapi.ECPubKeyLength-1), 9)
-	readerPub2 := append(make([]byte, libriapi.ECPubKeyLength-1), 10)
-	readerPub3 := append(make([]byte, libriapi.ECPubKeyLength-1), 11)
-	readerEntityID1 := "reader entity ID 1"
-	readerEntityID2 := "reader entity ID 2"
-
-	prs := []*api.PublicationReceipt{
-		{
-			EnvelopeKey:     envKey1,
-			EntryKey:        entryKey1,
-			AuthorPublicKey: authorPub1,
-			AuthorEntityId:  authorEntityID1,
-			ReaderPublicKey: readerPub1,
-			ReaderEntityId:  readerEntityID1,
-			ReceivedTime:    now - 5,
-		},
-		{
-			EnvelopeKey:     envKey2,
-			EntryKey:        entryKey1,
-			AuthorPublicKey: authorPub1,
-			AuthorEntityId:  authorEntityID1,
-			ReaderPublicKey: readerPub2,
-			ReaderEntityId:  readerEntityID2,
-			ReceivedTime:    now - 4,
-		},
-		{
-			EnvelopeKey:     envKey3,
-			EntryKey:        entryKey1,
-			AuthorPublicKey: authorPub1,
-			AuthorEntityId:  authorEntityID1,
-			ReaderPublicKey: readerPub3,
-			ReaderEntityId:  readerEntityID2,
-			ReceivedTime:    now - 3,
-		},
-		{
-			EnvelopeKey:     envKey4,
-			EntryKey:        entryKey2,
-			AuthorPublicKey: authorPub2,
-			AuthorEntityId:  authorEntityID2,
-			ReaderPublicKey: readerPub1,
-			ReaderEntityId:  readerEntityID1,
-			ReceivedTime:    now - 2,
-		},
-	}
-	for _, pr := range prs {
-		err := s.Put(pr)
-		assert.Nil(t, err)
-	}
-
-	// check entry key filter
-	limit := MaxSearchLimit
-	f := &SearchFilters{
-		EntryKey: entryKey1,
-	}
-	results, err := s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 3)
-	assert.Equal(t, envKey3, results[0].EnvelopeKey)
-	assert.Equal(t, envKey2, results[1].EnvelopeKey)
-	assert.Equal(t, envKey1, results[2].EnvelopeKey)
-
-	// check author pub key filter
-	f = &SearchFilters{
-		AuthorPublicKey: authorPub1,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 3)
-	assert.Equal(t, envKey3, results[0].EnvelopeKey)
-	assert.Equal(t, envKey2, results[1].EnvelopeKey)
-	assert.Equal(t, envKey1, results[2].EnvelopeKey)
-
-	// check author entity ID filter
-	f = &SearchFilters{
-		AuthorEntityID: authorEntityID1,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 3)
-	assert.Equal(t, envKey3, results[0].EnvelopeKey)
-	assert.Equal(t, envKey2, results[1].EnvelopeKey)
-	assert.Equal(t, envKey1, results[2].EnvelopeKey)
-
-	// check reader pub key filter
-	f = &SearchFilters{
-		ReaderPublicKey: readerPub1,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 2)
-	assert.Equal(t, envKey4, results[0].EnvelopeKey)
-	assert.Equal(t, envKey1, results[1].EnvelopeKey)
-
-	// check reader entity ID filter
-	f = &SearchFilters{
-		ReaderEntityID: readerEntityID2,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 2)
-	assert.Equal(t, envKey3, results[0].EnvelopeKey)
-	assert.Equal(t, envKey2, results[1].EnvelopeKey)
-
-	// check entry + author filter
-	f = &SearchFilters{
-		EntryKey:        entryKey1,
-		ReaderPublicKey: readerPub1,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 1)
-	assert.Equal(t, envKey1, results[0].EnvelopeKey)
-
-	// check before filter
-	f = &SearchFilters{
-		EntryKey: entryKey1,
-		Before:   now - 3,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 2)
-	assert.Equal(t, envKey2, results[0].EnvelopeKey)
-	assert.Equal(t, envKey1, results[1].EnvelopeKey)
-
-	// check before + after filter
-	f = &SearchFilters{
-		EntryKey: entryKey1,
-		Before:   now - 3,
-		After:    now - 4,
-	}
-	results, err = s.Search(f, limit)
-	assert.Nil(t, err)
-	assert.Len(t, results, 1)
-	assert.Equal(t, envKey2, results[0].EnvelopeKey)
-
-	// check limit
-	f = &SearchFilters{
-		EntryKey: entryKey1,
-	}
-	results, err = s.Search(f, 1)
-	assert.Nil(t, err)
-	assert.Len(t, results, 1)
-	assert.Equal(t, envKey3, results[0].EnvelopeKey)
+	storage.TestStorerPutSearch(t, d)
 }
 
 func TestDatastoreStorer_Put_ok(t *testing.T) {
-	lg, params := zap.NewNop(), NewDefaultParameters()
+	lg, params := zap.NewNop(), storage.NewDefaultParameters()
 	rng := rand.New(rand.NewSource(0))
 	pr := &api.PublicationReceipt{
 		EnvelopeKey:     util.RandBytes(rng, id.Length),
@@ -230,7 +74,7 @@ func TestDatastoreStorer_Put_ok(t *testing.T) {
 }
 
 func TestDatastoreStorer_Put_err(t *testing.T) {
-	lg, params := zap.NewNop(), NewDefaultParameters()
+	lg, params := zap.NewNop(), storage.NewDefaultParameters()
 	rng := rand.New(rand.NewSource(0))
 
 	d := &datastoreStorer{
@@ -272,7 +116,7 @@ func TestDatastoreStorer_Put_err(t *testing.T) {
 }
 
 func TestDatastoreStorer_Search_err(t *testing.T) {
-	lg, params := zap.NewNop(), NewDefaultParameters()
+	lg, params := zap.NewNop(), storage.NewDefaultParameters()
 	rng := rand.New(rand.NewSource(0))
 
 	// invalid search filter
@@ -281,18 +125,18 @@ func TestDatastoreStorer_Search_err(t *testing.T) {
 		logger: lg,
 		params: params,
 	}
-	fs := &SearchFilters{}
-	result, err := d.Search(fs, MaxSearchLimit)
+	fs := &storage.SearchFilters{}
+	result, err := d.Search(fs, storage.MaxSearchLimit)
 	assert.Nil(t, result)
 	assert.NotNil(t, err)
 
 	// too large search limit
-	fs = &SearchFilters{
+	fs = &storage.SearchFilters{
 		EntryKey: util.RandBytes(rng, id.Length),
 	}
-	result, err = d.Search(fs, MaxSearchLimit*2)
+	result, err = d.Search(fs, storage.MaxSearchLimit*2)
 	assert.Nil(t, result)
-	assert.Equal(t, ErrSearchLimitTooLarge, err)
+	assert.Equal(t, storage.ErrSearchLimitTooLarge, err)
 
 	// Next error
 	d = &datastoreStorer{
@@ -303,7 +147,7 @@ func TestDatastoreStorer_Search_err(t *testing.T) {
 		logger: lg,
 		params: params,
 	}
-	result, err = d.Search(fs, MaxSearchLimit)
+	result, err = d.Search(fs, storage.MaxSearchLimit)
 	assert.Nil(t, result)
 	assert.NotNil(t, err)
 
@@ -321,7 +165,7 @@ func TestDatastoreStorer_Search_err(t *testing.T) {
 		logger: lg,
 		params: params,
 	}
-	result, err = d.Search(fs, MaxSearchLimit)
+	result, err = d.Search(fs, storage.MaxSearchLimit)
 	assert.Nil(t, result)
 	assert.NotNil(t, err)
 }
