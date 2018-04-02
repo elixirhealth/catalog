@@ -95,7 +95,7 @@ func (d *datastoreStorer) Search(
 		return nil, storage.ErrSearchLimitTooLarge
 	}
 	results := &storage.PublicationReceipts{}
-	ctx, cancel := context.WithTimeout(context.Background(), d.params.SearchQueryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), d.params.SearchTimeout)
 	defer cancel()
 	q := getSearchQuery(fs)
 	iter := d.client.Run(ctx, q)

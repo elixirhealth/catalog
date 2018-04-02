@@ -82,7 +82,7 @@ func getCatalogConfig() (*server.Config, error) {
 
 	storageConfig := storage.NewDefaultParameters()
 	storageConfig.Type = storageType
-	storageConfig.SearchQueryTimeout = viper.GetDuration(searchTimeoutFlag)
+	storageConfig.SearchTimeout = viper.GetDuration(searchTimeoutFlag)
 
 	c := server.NewDefaultConfig()
 	c.WithServerPort(uint(viper.GetInt(serverPortFlag))).

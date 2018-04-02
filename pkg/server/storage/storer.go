@@ -63,26 +63,26 @@ type Storer interface {
 
 // Parameters defines the parameters of the Storer.
 type Parameters struct {
-	Type               bstorage.Type
-	SearchQueryTimeout time.Duration
-	GetTimeout         time.Duration
-	PutTimeout         time.Duration
+	Type          bstorage.Type
+	SearchTimeout time.Duration
+	GetTimeout    time.Duration
+	PutTimeout    time.Duration
 }
 
 // NewDefaultParameters returns a *Parameters object with default values.
 func NewDefaultParameters() *Parameters {
 	return &Parameters{
-		Type:               DefaultStorage,
-		SearchQueryTimeout: DefaultSearchQueryTimeout,
-		GetTimeout:         DefaultTimeout,
-		PutTimeout:         DefaultTimeout,
+		Type:          DefaultStorage,
+		SearchTimeout: DefaultSearchQueryTimeout,
+		GetTimeout:    DefaultTimeout,
+		PutTimeout:    DefaultTimeout,
 	}
 }
 
 // MarshalLogObject writes the parameters to the given object encoder.
 func (p *Parameters) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	oe.AddString(logStorageType, p.Type.String())
-	oe.AddDuration(logSearchQueryTimeout, p.SearchQueryTimeout)
+	oe.AddDuration(logSearchQueryTimeout, p.SearchTimeout)
 	oe.AddDuration(logPutTimeout, p.PutTimeout)
 	oe.AddDuration(logGetTimeout, p.GetTimeout)
 	return nil
@@ -188,7 +188,7 @@ func (prs *PublicationReceipts) PopList() []*api.PublicationReceipt {
 	return result
 }
 
-// TestStorerPutSearch tests that the storer properly handles a number of Put + Search situations.
+// TestStorerPutSearch tests that the storer properly handles a number of Put
 func TestStorerPutSearch(t *testing.T, s Storer) {
 	now := time.Now().Unix() * 1E6
 	envKey1 := append(make([]byte, id.Length-1), 1)

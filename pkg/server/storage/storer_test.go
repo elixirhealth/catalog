@@ -16,7 +16,7 @@ import (
 
 func TestNewDefaultParameters(t *testing.T) {
 	p := NewDefaultParameters()
-	assert.NotEmpty(t, p.SearchQueryTimeout)
+	assert.NotEmpty(t, p.SearchTimeout)
 }
 
 func TestValidateSearchFilters_ok(t *testing.T) {

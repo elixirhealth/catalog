@@ -168,7 +168,7 @@ func newCatalogConfigs(params *parameters) ([]*server.Config, []*net.TCPAddr) {
 	// set eviction params to ensure that evictions actually happen during test
 	storageParams := storage.NewDefaultParameters()
 	storageParams.Type = bstorage.DataStore
-	storageParams.SearchQueryTimeout = params.searchTimeout
+	storageParams.SearchTimeout = params.searchTimeout
 
 	for i := uint(0); i < params.nCatalogs; i++ {
 		serverPort, metricsPort := startPort+i*10, startPort+i*10+1
