@@ -16,20 +16,20 @@ func TestGetCatalogConfig(t *testing.T) {
 	profilerPort := uint(9012)
 	logLevel := zapcore.DebugLevel.String()
 	profile := true
-	gcpProjectID := "some project"
+	dbURL := "some URL"
 	searchTimeout := 10 * time.Second
 	storageInMemory := false
-	storageDataStore := true
+	storagePostgres := true
 
 	viper.Set(serverPortFlag, serverPort)
 	viper.Set(metricsPortFlag, metricsPort)
 	viper.Set(profilerPortFlag, profilerPort)
 	viper.Set(logLevelFlag, logLevel)
 	viper.Set(profileFlag, profile)
-	viper.Set(gcpProjectIDFlag, gcpProjectID)
+	viper.Set(dbURLFlag, dbURL)
 	viper.Set(searchTimeoutFlag, searchTimeout)
 	viper.Set(storageMemoryFlag, storageInMemory)
-	viper.Set(storageDataStoreFlag, storageDataStore)
+	viper.Set(storagePostgresFlag, storagePostgres)
 
 	c, err := getCatalogConfig()
 	assert.Nil(t, err)
@@ -38,34 +38,34 @@ func TestGetCatalogConfig(t *testing.T) {
 	assert.Equal(t, profilerPort, c.ProfilerPort)
 	assert.Equal(t, logLevel, c.LogLevel.String())
 	assert.Equal(t, profile, c.Profile)
-	assert.Equal(t, gcpProjectID, c.GCPProjectID)
 	assert.Equal(t, searchTimeout, c.Storage.SearchTimeout)
 	assert.NotEmpty(t, c.Storage.GetTimeout)
 	assert.NotEmpty(t, c.Storage.PutTimeout)
-	assert.Equal(t, bstorage.DataStore, c.Storage.Type)
+	assert.Equal(t, dbURL, c.DBUrl)
+	assert.Equal(t, bstorage.Postgres, c.Storage.Type)
 }
 
 func TestGetCacheStorageType(t *testing.T) {
 	viper.Set(storageMemoryFlag, true)
-	viper.Set(storageDataStoreFlag, false)
+	viper.Set(storagePostgresFlag, false)
 	st, err := getStorageType()
 	assert.Nil(t, err)
 	assert.Equal(t, bstorage.Memory, st)
 
 	viper.Set(storageMemoryFlag, false)
-	viper.Set(storageDataStoreFlag, true)
+	viper.Set(storagePostgresFlag, true)
 	st, err = getStorageType()
 	assert.Nil(t, err)
-	assert.Equal(t, bstorage.DataStore, st)
+	assert.Equal(t, bstorage.Postgres, st)
 
 	viper.Set(storageMemoryFlag, true)
-	viper.Set(storageDataStoreFlag, true)
+	viper.Set(storagePostgresFlag, true)
 	st, err = getStorageType()
 	assert.Equal(t, errMultipleStorageTypes, err)
 	assert.Equal(t, bstorage.Unspecified, st)
 
 	viper.Set(storageMemoryFlag, false)
-	viper.Set(storageDataStoreFlag, false)
+	viper.Set(storagePostgresFlag, false)
 	st, err = getStorageType()
 	assert.Equal(t, errNoStorageType, err)
 	assert.Equal(t, bstorage.Unspecified, st)

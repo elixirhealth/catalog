@@ -18,14 +18,14 @@ import (
 )
 
 const (
-	serverPortFlag       = "serverPort"
-	metricsPortFlag      = "metricsPort"
-	profilerPortFlag     = "profilerPort"
-	profileFlag          = "profile"
-	gcpProjectIDFlag     = "gcpProjectID"
-	storageMemoryFlag    = "storageMemory"
-	storageDataStoreFlag = "storageDataStore"
-	searchTimeoutFlag    = "searchTimeout"
+	serverPortFlag      = "serverPort"
+	metricsPortFlag     = "metricsPort"
+	profilerPortFlag    = "profilerPort"
+	profileFlag         = "profile"
+	storageMemoryFlag   = "storageMemory"
+	searchTimeoutFlag   = "searchTimeout"
+	dbURLFlag           = "dbURL"
+	storagePostgresFlag = "storagePostgres"
 )
 
 var (
@@ -62,9 +62,9 @@ func init() {
 		"whether to enable profiler")
 	startCmd.Flags().Bool(storageMemoryFlag, false,
 		"use in-memory storage")
-	startCmd.Flags().Bool(storageDataStoreFlag, false,
-		"use GCP DataStore storage")
-	startCmd.Flags().String(gcpProjectIDFlag, "", "GCP project ID")
+	startCmd.Flags().Bool(storagePostgresFlag, false,
+		"use Postgres DB storage")
+	startCmd.Flags().String(dbURLFlag, "", "Postgres DB URL")
 	startCmd.Flags().Duration(searchTimeoutFlag, storage.DefaultSearchQueryTimeout,
 		"timeout for Search DataStore requests")
 
@@ -91,7 +91,7 @@ func getCatalogConfig() (*server.Config, error) {
 		WithLogLevel(logging.GetLogLevel(viper.GetString(logLevelFlag))).
 		WithProfile(viper.GetBool(profileFlag))
 	c.WithStorage(storageConfig).
-		WithGCPProjectID(viper.GetString(gcpProjectIDFlag))
+		WithDBUrl(viper.GetString(dbURLFlag))
 
 	lg := logging.NewDevLogger(c.LogLevel)
 	lg.Info("successfully parsed config", zap.Object("config", c))
@@ -100,13 +100,16 @@ func getCatalogConfig() (*server.Config, error) {
 }
 
 func getStorageType() (bstorage.Type, error) {
-	if viper.GetBool(storageMemoryFlag) && viper.GetBool(storageDataStoreFlag) {
+	if viper.GetBool(storageMemoryFlag) && viper.GetBool(storagePostgresFlag) {
 		return bstorage.Unspecified, errMultipleStorageTypes
 	}
 	if viper.GetBool(storageMemoryFlag) {
 		return bstorage.Memory, nil
 	}
-	if viper.GetBool(storageDataStoreFlag) {
+	if viper.GetBool(storagePostgresFlag) {
+		return bstorage.Postgres, nil
+	}
+	if viper.GetBool(storagePostgresFlag) {
 		return bstorage.DataStore, nil
 	}
 	return bstorage.Unspecified, errNoStorageType
