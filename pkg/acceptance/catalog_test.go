@@ -4,22 +4,23 @@ package acceptance
 
 import (
 	"context"
-	"io/ioutil"
 	"math/rand"
 	"net"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/drausin/libri/libri/common/errors"
 	"github.com/drausin/libri/libri/common/id"
+	"github.com/drausin/libri/libri/common/logging"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	api "github.com/elixirhealth/catalog/pkg/catalogapi"
 	"github.com/elixirhealth/catalog/pkg/client"
 	"github.com/elixirhealth/catalog/pkg/server"
 	"github.com/elixirhealth/catalog/pkg/server/storage"
+	"github.com/elixirhealth/catalog/pkg/server/storage/postgres/migrations"
 	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"github.com/elixirhealth/service-base/pkg/util"
+	"github.com/mattes/migrate/source/go-bindata"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zapcore"
 )
@@ -30,20 +31,19 @@ type parameters struct {
 	nReaderPubKeys uint
 	nPuts          uint
 	nSearches      uint
-	gcpProjectID   string
 	putTimeout     time.Duration
 	searchTimeout  time.Duration
 	logLevel       zapcore.Level
 }
 
 type state struct {
-	catalogs       []*server.Catalog
-	catalogClients []api.CatalogClient
-	authorPubKeys  [][]byte
-	readerPubKeys  [][]byte
-	dataDir        string
-	datastoreProc  *os.Process
-	rng            *rand.Rand
+	catalogs         []*server.Catalog
+	catalogClients   []api.CatalogClient
+	authorPubKeys    [][]byte
+	readerPubKeys    [][]byte
+	rng              *rand.Rand
+	dbURL            string
+	tearDownPostgres func() error
 }
 
 func TestAcceptance(t *testing.T) {
@@ -53,18 +53,17 @@ func TestAcceptance(t *testing.T) {
 		nSearches:      4,
 		nAuthorPubKeys: 4,
 		nReaderPubKeys: 4,
-		gcpProjectID:   "dummy-acceptance-id",
 		logLevel:       zapcore.InfoLevel,
 		putTimeout:     3 * time.Second,
 		searchTimeout:  3 * time.Second,
 	}
-	st := setUp(params)
+	st := setUp(t, params)
 
 	testPut(t, params, st)
 
 	testSearch(t, params, st)
 
-	tearDown(st)
+	tearDown(t, st)
 }
 
 func testPut(t *testing.T, params *parameters, st *state) {
@@ -108,7 +107,7 @@ func testSearch(t *testing.T, params *parameters, st *state) {
 	}
 }
 
-func setUp(params *parameters) *state {
+func setUp(t *testing.T, params *parameters) *state {
 	rng := rand.New(rand.NewSource(0))
 	authorPubKeys := make([][]byte, params.nAuthorPubKeys)
 	for i := uint(0); i < params.nAuthorPubKeys; i++ {
@@ -118,25 +117,25 @@ func setUp(params *parameters) *state {
 	for i := uint(0); i < params.nReaderPubKeys; i++ {
 		readerPubKeys[i] = util.RandBytes(rng, libriapi.ECPubKeyLength)
 	}
-	dataDir, err := ioutil.TempDir("", "catalog-datastore-test")
-	errors.MaybePanic(err)
-	datastoreProc := bstorage.StartDatastoreEmulator(dataDir)
 
-	time.Sleep(5 * time.Second)
+	dbURL, cleanup, err := bstorage.StartTestPostgres()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	st := &state{
-		rng:           rng,
-		authorPubKeys: authorPubKeys,
-		readerPubKeys: readerPubKeys,
-		dataDir:       dataDir,
-		datastoreProc: datastoreProc,
+		rng:              rng,
+		authorPubKeys:    authorPubKeys,
+		readerPubKeys:    readerPubKeys,
+		dbURL:            dbURL,
+		tearDownPostgres: cleanup,
 	}
 	createAndStartCatalogs(params, st)
 	return st
 }
 
 func createAndStartCatalogs(params *parameters, st *state) {
-	configs, addrs := newCatalogConfigs(params)
+	configs, addrs := newCatalogConfigs(params, st)
 	catalogs := make([]*server.Catalog, params.nCatalogs)
 	catalogClients := make([]api.CatalogClient, params.nCatalogs)
 	up := make(chan *server.Catalog, 1)
@@ -160,21 +159,21 @@ func createAndStartCatalogs(params *parameters, st *state) {
 	st.catalogClients = catalogClients
 }
 
-func newCatalogConfigs(params *parameters) ([]*server.Config, []*net.TCPAddr) {
+func newCatalogConfigs(params *parameters, st *state) ([]*server.Config, []*net.TCPAddr) {
 	startPort := uint(10100)
 	configs := make([]*server.Config, params.nCatalogs)
 	addrs := make([]*net.TCPAddr, params.nCatalogs)
 
 	// set eviction params to ensure that evictions actually happen during test
 	storageParams := storage.NewDefaultParameters()
-	storageParams.Type = bstorage.DataStore
-	storageParams.SearchQueryTimeout = params.searchTimeout
+	storageParams.Type = bstorage.Postgres
+	storageParams.SearchTimeout = params.searchTimeout
 
 	for i := uint(0); i < params.nCatalogs; i++ {
 		serverPort, metricsPort := startPort+i*10, startPort+i*10+1
 		configs[i] = server.NewDefaultConfig().
 			WithStorage(storageParams).
-			WithGCPProjectID(params.gcpProjectID)
+			WithDBUrl(st.dbURL)
 		configs[i].WithServerPort(uint(serverPort)).
 			WithMetricsPort(uint(metricsPort)).
 			WithLogLevel(params.logLevel)
@@ -183,8 +182,16 @@ func newCatalogConfigs(params *parameters) ([]*server.Config, []*net.TCPAddr) {
 	return configs, addrs
 }
 
-func tearDown(st *state) {
-	bstorage.StopDatastoreEmulator(st.datastoreProc)
-	err := os.RemoveAll(st.dataDir)
-	errors.MaybePanic(err)
+func tearDown(t *testing.T, st *state) {
+	logger := &bstorage.ZapLogger{Logger: logging.NewDevInfoLogger()}
+	m := bstorage.NewBindataMigrator(
+		st.dbURL,
+		bindata.Resource(migrations.AssetNames(), migrations.Asset),
+		logger,
+	)
+	err := m.Down()
+	assert.Nil(t, err)
+
+	err = st.tearDownPostgres()
+	assert.Nil(t, err)
 }

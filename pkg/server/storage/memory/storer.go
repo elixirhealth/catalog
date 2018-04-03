@@ -1,30 +1,30 @@
-package storage
+package memory
 
 import (
 	"bytes"
 	"container/heap"
 	"sync"
 
-	"cloud.google.com/go/datastore"
 	"github.com/drausin/libri/libri/common/id"
 	api "github.com/elixirhealth/catalog/pkg/catalogapi"
+	"github.com/elixirhealth/catalog/pkg/server/storage"
 	"go.uber.org/zap"
 )
 
-// NewMemory creates a new Storer backed by an in-memory map with the given parameters and logger.
-func NewMemory(params *Parameters, logger *zap.Logger) Storer {
+// New creates a new Storer backed by an in-memory map with the given parameters and logger.
+func New(params *storage.Parameters, logger *zap.Logger) storage.Storer {
 	return &memoryStorer{
-		storedPRs: make(map[string]*PublicationReceipt),
-		params:    params,
-		logger:    logger,
+		prs:    make(map[string]*api.PublicationReceipt),
+		params: params,
+		logger: logger,
 	}
 }
 
 type memoryStorer struct {
-	storedPRs map[string]*PublicationReceipt
-	params    *Parameters
-	logger    *zap.Logger
-	mu        sync.Mutex
+	prs    map[string]*api.PublicationReceipt
+	params *storage.Parameters
+	logger *zap.Logger
+	mu     sync.Mutex
 }
 
 func (f *memoryStorer) Put(pr *api.PublicationReceipt) error {
@@ -32,49 +32,47 @@ func (f *memoryStorer) Put(pr *api.PublicationReceipt) error {
 		return err
 	}
 	envKeyHex := id.Hex(pr.EnvelopeKey)
-	spr := encodeStoredPubReceipt(pr)
-	spr.EnvelopeKey = datastore.NameKey(publicationReceiptKind, envKeyHex, nil)
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	if _, in := f.storedPRs[envKeyHex]; in {
+	if _, in := f.prs[envKeyHex]; in {
 		f.logger.Debug("publication receipt already exists",
 			zap.String(logEnvelopeKey, envKeyHex))
 		return nil
 	}
-	f.storedPRs[envKeyHex] = spr
+	f.prs[envKeyHex] = pr
 	f.logger.Debug("stored new publication", zap.String(logEnvelopeKey, id.Hex(pr.EnvelopeKey)))
 	return nil
 }
 
 func (f *memoryStorer) Search(
-	filters *SearchFilters, limit uint32,
+	filters *storage.SearchFilters, limit uint32,
 ) ([]*api.PublicationReceipt, error) {
-	if err := validateSearchFilters(filters); err != nil {
+	if err := storage.ValidateSearchFilters(filters); err != nil {
 		return nil, err
 	}
-	if limit > MaxSearchLimit {
-		return nil, ErrSearchLimitTooLarge
+	if limit > storage.MaxSearchLimit {
+		return nil, storage.ErrSearchLimitTooLarge
 	}
-	storedResults := &publicationReceipts{}
+	results := &storage.PublicationReceipts{}
 	f.mu.Lock()
-	for _, spr := range f.storedPRs {
-		pr, err := decodeStoredPubReceipt(spr)
-		if err != nil {
-			return nil, err
-		}
+	for _, pr := range f.prs {
 		if matchesFilter(filters, pr) {
-			heap.Push(storedResults, spr)
-			if storedResults.Len() > int(limit) {
-				heap.Pop(storedResults)
+			heap.Push(results, pr)
+			if results.Len() > int(limit) {
+				heap.Pop(results)
 			}
 		}
 	}
 	f.mu.Unlock()
-	return storedResultsToList(storedResults)
+	return results.PopList(), nil
 }
 
-func matchesFilter(filters *SearchFilters, pr *api.PublicationReceipt) bool {
-	// assume that at least one filter is set per validateSearchFilters
+func (f *memoryStorer) Close() error {
+	return nil
+}
+
+func matchesFilter(filters *storage.SearchFilters, pr *api.PublicationReceipt) bool {
+	// assume that at least one filter is set per ValidateSearchFilters
 	if bytesNotMatch(filters.EntryKey, pr.EntryKey) {
 		return false
 	}

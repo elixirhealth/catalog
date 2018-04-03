@@ -170,3 +170,7 @@ func (f *fixedStorer) Search(
 ) ([]*api.PublicationReceipt, error) {
 	return f.searchResult, f.searchErr
 }
+
+func (f *fixedStorer) Close() error {
+	return nil
+}

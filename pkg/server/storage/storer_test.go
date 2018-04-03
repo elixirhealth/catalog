@@ -6,17 +6,17 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/datastore"
 	"github.com/drausin/libri/libri/common/id"
 	libriapi "github.com/drausin/libri/libri/librarian/api"
 	"github.com/elixirhealth/catalog/pkg/catalogapi"
+	api "github.com/elixirhealth/catalog/pkg/catalogapi"
 	"github.com/elixirhealth/service-base/pkg/util"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewDefaultParameters(t *testing.T) {
 	p := NewDefaultParameters()
-	assert.NotEmpty(t, p.SearchQueryTimeout)
+	assert.NotEmpty(t, p.SearchTimeout)
 }
 
 func TestValidateSearchFilters_ok(t *testing.T) {
@@ -39,7 +39,7 @@ func TestValidateSearchFilters_ok(t *testing.T) {
 		},
 	}
 	for info, f := range fs {
-		err := validateSearchFilters(f)
+		err := ValidateSearchFilters(f)
 		assert.Nil(t, err, info)
 	}
 }
@@ -72,50 +72,50 @@ func TestValidateSearchFilters_err(t *testing.T) {
 		},
 	}
 	for info, f := range fs {
-		err := validateSearchFilters(f)
+		err := ValidateSearchFilters(f)
 		assert.NotNil(t, err, info)
 	}
 }
 
 func TestPublicationReceipts(t *testing.T) {
 	now := time.Now()
-	prs := &publicationReceipts{
+	prs := &PublicationReceipts{
 		{
-			EnvelopeKey:  datastore.NameKey(publicationReceiptKind, "key 1", nil),
-			ReceivedTime: now.Add(-1 * time.Second),
+			EnvelopeKey:  []byte{1},
+			ReceivedTime: now.Add(-1*time.Second).UnixNano() / 1E3,
 		},
 		{
-			EnvelopeKey:  datastore.NameKey(publicationReceiptKind, "key 2", nil),
-			ReceivedTime: now.Add(-3 * time.Second),
+			EnvelopeKey:  []byte{2},
+			ReceivedTime: now.Add(-3*time.Second).UnixNano() / 1E3,
 		},
 		{
-			EnvelopeKey:  datastore.NameKey(publicationReceiptKind, "key 3", nil),
-			ReceivedTime: now.Add(-2 * time.Second),
+			EnvelopeKey:  []byte{3},
+			ReceivedTime: now.Add(-2*time.Second).UnixNano() / 1E3,
 		},
 		{
-			EnvelopeKey:  datastore.NameKey(publicationReceiptKind, "key 4", nil),
-			ReceivedTime: now.Add(-4 * time.Second),
+			EnvelopeKey:  []byte{4},
+			ReceivedTime: now.Add(-4*time.Second).UnixNano() / 1E3,
 		},
 	}
 	heap.Init(prs)
-	heap.Push(prs, &PublicationReceipt{
-		EnvelopeKey:  datastore.NameKey(publicationReceiptKind, "key 5", nil),
-		ReceivedTime: now.Add(-500 * time.Millisecond),
+	heap.Push(prs, &api.PublicationReceipt{
+		EnvelopeKey:  []byte{5},
+		ReceivedTime: now.Add(-500*time.Millisecond).UnixNano() / 1E3,
 	})
 	assert.Equal(t, 5, prs.Len())
 
 	pr0 := prs.Peak()
-	pr1 := heap.Pop(prs).(*PublicationReceipt)
-	pr2 := heap.Pop(prs).(*PublicationReceipt)
-	pr3 := heap.Pop(prs).(*PublicationReceipt)
-	pr4 := heap.Pop(prs).(*PublicationReceipt)
-	pr5 := heap.Pop(prs).(*PublicationReceipt)
+	pr1 := heap.Pop(prs).(*api.PublicationReceipt)
+	pr2 := heap.Pop(prs).(*api.PublicationReceipt)
+	pr3 := heap.Pop(prs).(*api.PublicationReceipt)
+	pr4 := heap.Pop(prs).(*api.PublicationReceipt)
+	pr5 := heap.Pop(prs).(*api.PublicationReceipt)
 
 	// should be ordered from earliest to latest
-	assert.Equal(t, "key 4", pr0.EnvelopeKey.Name)
-	assert.Equal(t, "key 4", pr1.EnvelopeKey.Name)
-	assert.Equal(t, "key 2", pr2.EnvelopeKey.Name)
-	assert.Equal(t, "key 3", pr3.EnvelopeKey.Name)
-	assert.Equal(t, "key 1", pr4.EnvelopeKey.Name)
-	assert.Equal(t, "key 5", pr5.EnvelopeKey.Name)
+	assert.Equal(t, []byte{4}, pr0.EnvelopeKey)
+	assert.Equal(t, []byte{4}, pr1.EnvelopeKey)
+	assert.Equal(t, []byte{2}, pr2.EnvelopeKey)
+	assert.Equal(t, []byte{3}, pr3.EnvelopeKey)
+	assert.Equal(t, []byte{1}, pr4.EnvelopeKey)
+	assert.Equal(t, []byte{5}, pr5.EnvelopeKey)
 }

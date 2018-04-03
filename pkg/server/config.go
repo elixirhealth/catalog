@@ -11,6 +11,7 @@ import (
 type Config struct {
 	*server.BaseConfig
 	Storage      *storage.Parameters
+	DBUrl        string
 	GCPProjectID string
 }
 
@@ -51,5 +52,11 @@ func (c *Config) WithDefaultStorage() *Config {
 // WithGCPProjectID sets the GCP ProjectID to the given value.
 func (c *Config) WithGCPProjectID(id string) *Config {
 	c.GCPProjectID = id
+	return c
+}
+
+// WithDBUrl sets the DB URL to the given value.
+func (c *Config) WithDBUrl(dbURL string) *Config {
+	c.DBUrl = dbURL
 	return c
 }
