@@ -121,7 +121,7 @@ func (d *datastoreStorer) Search(
 	return results.PopList(), nil
 }
 
-func (f *datastoreStorer) Close() error {
+func (d *datastoreStorer) Close() error {
 	return nil
 }
 
