@@ -70,26 +70,23 @@ func TestStorer_Put_ok(t *testing.T) {
 	params := storage.NewDefaultParameters()
 	pr := okPubReceipt(rng)
 
-	var err error
-	var s *storer
-
-	s = &storer{
+	s := &storer{
 		params: params,
 		logger: lg,
 		qr: &fixedQuerier{
-			insertResult: &fixedSqlResult{
+			insertResult: &fixedSQLResult{
 				rowsAffectedValue: 1, // new PR
 			},
 		},
 	}
-	err = s.Put(pr)
+	err := s.Put(pr)
 	assert.Nil(t, err)
 
 	s = &storer{
 		params: params,
 		logger: lg,
 		qr: &fixedQuerier{
-			insertResult: &fixedSqlResult{
+			insertResult: &fixedSQLResult{
 				rowsAffectedValue: 0, // existing PR
 			},
 		},
@@ -340,32 +337,40 @@ type fixedQuerier struct {
 	insertErr    error
 }
 
-func (f *fixedQuerier) SelectQueryContext(ctx context.Context, b squirrel.SelectBuilder) (QueryRows, error) {
+func (f *fixedQuerier) SelectQueryContext(
+	ctx context.Context, b squirrel.SelectBuilder,
+) (QueryRows, error) {
 	return f.selectRows, f.selectErr
 }
 
-func (f *fixedQuerier) SelectQueryRowContext(ctx context.Context, b squirrel.SelectBuilder) squirrel.RowScanner {
+func (f *fixedQuerier) SelectQueryRowContext(
+	ctx context.Context, b squirrel.SelectBuilder,
+) squirrel.RowScanner {
 	panic("implement me")
 }
 
-func (f *fixedQuerier) InsertExecContext(ctx context.Context, b squirrel.InsertBuilder) (sql.Result, error) {
+func (f *fixedQuerier) InsertExecContext(
+	ctx context.Context, b squirrel.InsertBuilder,
+) (sql.Result, error) {
 	return f.insertResult, f.insertErr
 }
 
-func (f *fixedQuerier) UpdateExecContext(ctx context.Context, b squirrel.UpdateBuilder) (sql.Result, error) {
+func (f *fixedQuerier) UpdateExecContext(
+	ctx context.Context, b squirrel.UpdateBuilder,
+) (sql.Result, error) {
 	panic("implement me")
 }
 
-type fixedSqlResult struct {
+type fixedSQLResult struct {
 	rowsAffectedValue int64
 	rowsAffectedErr   error
 }
 
-func (f *fixedSqlResult) LastInsertId() (int64, error) {
+func (f *fixedSQLResult) LastInsertId() (int64, error) {
 	panic("implement me")
 }
 
-func (f *fixedSqlResult) RowsAffected() (int64, error) {
+func (f *fixedSQLResult) RowsAffected() (int64, error) {
 	return f.rowsAffectedValue, f.rowsAffectedErr
 }
 

@@ -51,6 +51,7 @@ type storer struct {
 	logger  *zap.Logger
 }
 
+// New creates a new storage.Storer backed by a Postgres DB at the given dbURL.
 func New(dbURL string, params *storage.Parameters, logger *zap.Logger) (storage.Storer, error) {
 	if dbURL == "" {
 		return nil, errEmptyDBUrl
@@ -224,11 +225,14 @@ func prepPubReceiptScan() ([]string, []interface{}, func() *api.PublicationRecei
 	}
 }
 
+// ColDest is a mapping from a column name to a sql.Scan destination type.
 type ColDest struct {
 	col  string
 	dest interface{}
 }
 
+// SplitColDests returns a list of column names and their corresponding destination types plus a
+// given number of extra destination capacity.
 func SplitColDests(nExtraDest int, cds []*ColDest) ([]string, []interface{}) {
 	dests := make([]interface{}, len(cds), len(cds)+nExtraDest)
 	cols := make([]string, len(cds))
@@ -239,6 +243,7 @@ func SplitColDests(nExtraDest int, cds []*ColDest) ([]string, []interface{}) {
 	return cols, dests
 }
 
+// QueryRows is a container for the result of a Select query.
 type QueryRows interface {
 	Scan(dest ...interface{}) error
 	Next() bool
@@ -246,6 +251,8 @@ type QueryRows interface {
 	Err() error
 }
 
+// Querier is an interface wrapper around Squirrel query builders and their results for improved
+// mocking.
 type Querier interface {
 	SelectQueryContext(ctx context.Context, b sq.SelectBuilder) (QueryRows, error)
 	SelectQueryRowContext(ctx context.Context, b sq.SelectBuilder) sq.RowScanner
@@ -255,6 +262,7 @@ type Querier interface {
 
 type querierImpl struct{}
 
+// NewQuerier returns a new Querier.
 func NewQuerier() Querier {
 	return &querierImpl{}
 }
