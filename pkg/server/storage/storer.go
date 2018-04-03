@@ -59,6 +59,7 @@ var (
 type Storer interface {
 	Put(pub *api.PublicationReceipt) error
 	Search(filters *SearchFilters, limit uint32) ([]*api.PublicationReceipt, error)
+	Close() error
 }
 
 // Parameters defines the parameters of the Storer.

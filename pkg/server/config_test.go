@@ -21,7 +21,7 @@ func TestConfig_WithStorage(t *testing.T) {
 	assert.NotEqual(t,
 		c1.Storage.Type,
 		c3.WithStorage(
-			&storage.Parameters{Type: bstorage.DataStore},
+			&storage.Parameters{Type: bstorage.Postgres},
 		).Storage.Type,
 	)
 }
@@ -31,4 +31,11 @@ func TestConfig_WithGCPProjectID(t *testing.T) {
 	p := "project-ID"
 	c1.WithGCPProjectID(p)
 	assert.Equal(t, p, c1.GCPProjectID)
+}
+
+func TestConfig_WithDBUrl(t *testing.T) {
+	c1 := &Config{}
+	dbURL := "some DB URL"
+	c1.WithDBUrl(dbURL)
+	assert.Equal(t, dbURL, c1.DBUrl)
 }

@@ -67,6 +67,10 @@ func (f *memoryStorer) Search(
 	return results.PopList(), nil
 }
 
+func (f *memoryStorer) Close() error {
+	return nil
+}
+
 func matchesFilter(filters *storage.SearchFilters, pr *api.PublicationReceipt) bool {
 	// assume that at least one filter is set per ValidateSearchFilters
 	if bytesNotMatch(filters.EntryKey, pr.EntryKey) {

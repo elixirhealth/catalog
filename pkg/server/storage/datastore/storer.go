@@ -121,6 +121,10 @@ func (d *datastoreStorer) Search(
 	return results.PopList(), nil
 }
 
+func (f *datastoreStorer) Close() error {
+	return nil
+}
+
 func processStored(
 	stored *PublicationReceipt,
 	beforeFilter int64,

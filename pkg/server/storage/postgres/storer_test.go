@@ -62,6 +62,8 @@ func TestStorer_PutSearch(t *testing.T) {
 	assert.NotNil(t, s)
 
 	storage.TestStorerPutSearch(t, s)
+	err = s.Close()
+	assert.Nil(t, err)
 }
 
 func TestStorer_Put_ok(t *testing.T) {

@@ -140,6 +140,10 @@ func (s *storer) Search(
 	return prs[:i], nil
 }
 
+func (s *storer) Close() error {
+	return s.db.Close()
+}
+
 func getSearchEqPreds(f *storage.SearchFilters) map[string]interface{} {
 	preds := make(map[string]interface{})
 	if f.EntryKey != nil {
@@ -250,6 +254,8 @@ type QueryRows interface {
 	Close() error
 	Err() error
 }
+
+// TODO (drausin) move below to service base
 
 // Querier is an interface wrapper around Squirrel query builders and their results for improved
 // mocking.
