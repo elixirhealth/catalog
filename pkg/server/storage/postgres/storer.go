@@ -31,7 +31,6 @@ const (
 	receivedDateCol   = "received_date"
 
 	isoDate             = "2006-01-02"
-	isoTime             = "2006-01-02T15:04:05.999999Z07:00"
 	onConflictDoNothing = "ON CONFLICT DO NOTHING"
 )
 
@@ -90,6 +89,7 @@ func (s *storer) Put(pr *api.PublicationReceipt) error {
 	logEnvKey := zap.String(logEnvelopeKey, id.Hex(pr.EnvelopeKey))
 	if nRows == 0 {
 		s.logger.Debug("publication receipt already exists", logEnvKey)
+		return nil
 	}
 	s.logger.Debug("stored new publication receipt", logEnvKey)
 	return nil
@@ -122,7 +122,7 @@ func (s *storer) Search(
 			return nil, err
 		}
 		s.logger.Debug("found no search results")
-		return prs, nil
+		return prs[:i], nil
 	}
 	for rows.Next() {
 		_, dest, create := prepPubReceiptScan()
@@ -132,8 +132,11 @@ func (s *storer) Search(
 		prs[i] = create()
 		i++
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	s.logger.Debug("found search results", zap.Int(nResults, i))
-	return prs[:i], rows.Close()
+	return prs[:i], nil
 }
 
 func getSearchEqPreds(f *storage.SearchFilters) map[string]interface{} {
