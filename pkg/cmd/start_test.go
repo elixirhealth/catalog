@@ -45,6 +45,21 @@ func TestGetCatalogConfig(t *testing.T) {
 	assert.Equal(t, bstorage.Postgres, c.Storage.Type)
 }
 
+func TestGetDBUrl(t *testing.T) {
+
+	// no DB password set should just return URL
+	unsafeDbURL := "postgres://admin@127.0.0.1:5432/catalog?sslmode=disable&password=changeme"
+	viper.Set(dbURLFlag, unsafeDbURL)
+	assert.Equal(t, unsafeDbURL, getDBUrl())
+
+	// set DB password should be append to end
+	safeDbURL := "postgres://admin@127.0.0.1:5432/catalog?sslmode=disable"
+	dbPass := "changeme"
+	viper.Set(dbURLFlag, safeDbURL)
+	viper.Set(dbPasswordFlag, dbPass)
+	assert.Equal(t, unsafeDbURL, getDBUrl())
+}
+
 func TestGetCacheStorageType(t *testing.T) {
 	viper.Set(storageMemoryFlag, true)
 	viper.Set(storagePostgresFlag, false)

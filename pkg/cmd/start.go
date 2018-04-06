@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -25,6 +26,7 @@ const (
 	storageMemoryFlag   = "storageMemory"
 	searchTimeoutFlag   = "searchTimeout"
 	dbURLFlag           = "dbURL"
+	dbPasswordFlag      = "dbPassword"
 	storagePostgresFlag = "storagePostgres"
 )
 
@@ -64,12 +66,13 @@ func init() {
 		"use in-memory storage")
 	startCmd.Flags().Bool(storagePostgresFlag, false,
 		"use Postgres DB storage")
-	startCmd.Flags().String(dbURLFlag, "", "Postgres DB URL")
+	startCmd.Flags().String(dbURLFlag, "", "Postgres DB URL, including username")
+	startCmd.Flags().String(dbPasswordFlag, "", "DB user's password")
 	startCmd.Flags().Duration(searchTimeoutFlag, storage.DefaultSearchQueryTimeout,
 		"timeout for Search DataStore requests")
 
 	// bind viper flags
-	viper.SetEnvPrefix(envVarPrefix) // look for env vars with "COURIER_" prefix
+	viper.SetEnvPrefix(envVarPrefix) // look for env vars with "CATALOG_" prefix
 	viper.AutomaticEnv()             // read in environment variables that match
 	cerrors.MaybePanic(viper.BindPFlags(startCmd.Flags()))
 }
@@ -91,12 +94,21 @@ func getCatalogConfig() (*server.Config, error) {
 		WithLogLevel(logging.GetLogLevel(viper.GetString(logLevelFlag))).
 		WithProfile(viper.GetBool(profileFlag))
 	c.WithStorage(storageConfig).
-		WithDBUrl(viper.GetString(dbURLFlag))
+		WithDBUrl(getDBUrl())
 
 	lg := logging.NewDevLogger(c.LogLevel)
 	lg.Info("successfully parsed config", zap.Object("config", c))
 
 	return c, nil
+}
+
+func getDBUrl() string {
+	dbURL := viper.GetString(dbURLFlag)
+	if dbPass := viper.GetString(dbPasswordFlag); dbPass != "" {
+		// append pw to URL args
+		return fmt.Sprintf("%s&password=%s", dbURL, dbPass)
+	}
+	return dbURL
 }
 
 func getStorageType() (bstorage.Type, error) {

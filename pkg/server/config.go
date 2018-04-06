@@ -31,6 +31,7 @@ func (c *Config) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	err = oe.AddObject(logStorage, c.Storage)
 	errors.MaybePanic(err) // should never happen
 	oe.AddString(logGCPProjectID, c.GCPProjectID)
+	// DBUrl intentionally not logged for security reasons
 	return nil
 }
 
