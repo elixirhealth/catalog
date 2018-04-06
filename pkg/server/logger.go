@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/hex"
+
 	"github.com/drausin/libri/libri/common/id"
 	"github.com/elixirhealth/catalog/pkg/catalogapi"
 	"go.uber.org/zap"
@@ -8,14 +10,17 @@ import (
 )
 
 const (
-	logEnvelopeKey             = "envelope_key"
-	logEntryKeyFilterShort     = "entry_key_filter_short"
-	logAuthorPubKeyFilterShort = "author_pub_key_filter_short"
-	logReaderPubKeyFilterShort = "reader_pub_key_filter_short"
-	logBeforeTimeFilter        = "before_time_filter"
-	logNResults                = "n_results"
-	logStorage                 = "storage"
-	logGCPProjectID            = "gcp_project_id"
+	logEnvelopeKey         = "envelope_key"
+	logEntryKeyFilterShort = "entry_key_filter_short"
+	logAuthorPubKeyFilter  = "author_pub_key_filter"
+	logReaderPubKeyFilter  = "reader_pub_key_filter"
+	logAuthorEntityID      = "author_entity_id"
+	logReaderEntityID      = "reader_entity_id"
+	logBeforeTimeFilter    = "before_time_filter"
+	logAfterTimeFilter     = "after_time_filter"
+	logNResults            = "n_results"
+	logStorage             = "storage"
+	logGCPProjectID        = "gcp_project_id"
 )
 
 func logPutRequestFields(rq *catalogapi.PutRequest) []zapcore.Field {
@@ -29,13 +34,13 @@ func logPutRequestFields(rq *catalogapi.PutRequest) []zapcore.Field {
 
 func logSearchRequestFields(rq *catalogapi.SearchRequest) []zapcore.Field {
 	fs := []zapcore.Field{
-		zap.String(logEntryKeyFilterShort, id.ShortHex(rq.EntryKey)),
-		zap.String(logAuthorPubKeyFilterShort, id.ShortHex(rq.AuthorPublicKey)),
-		zap.String(logReaderPubKeyFilterShort, id.ShortHex(rq.ReaderPublicKey)),
-	}
-	if rq.Before != 0 {
-		fs = append(fs,
-			zap.Time(logBeforeTimeFilter, catalogapi.FromEpochMicros(rq.Before)))
+		zap.String(logEntryKeyFilterShort, hex.EncodeToString(rq.EntryKey)),
+		zap.String(logAuthorPubKeyFilter, hex.EncodeToString(rq.AuthorPublicKey)),
+		zap.String(logAuthorEntityID, rq.AuthorEntityId),
+		zap.String(logReaderPubKeyFilter, hex.EncodeToString(rq.ReaderPublicKey)),
+		zap.String(logReaderEntityID, rq.ReaderEntityId),
+		zap.Time(logBeforeTimeFilter, catalogapi.FromEpochMicros(rq.Before)),
+		zap.Time(logAfterTimeFilter, catalogapi.FromEpochMicros(rq.After)),
 	}
 	return fs
 }
